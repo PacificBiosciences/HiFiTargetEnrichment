@@ -1,5 +1,12 @@
 # HiFi DeepVariant + WhatsHap workflow
 
+## Workflow steps
+
+1) align HiFi reads to reference with [pbmm2](https://github.com/PacificBiosciences/pbmm2)
+2) call small variants with [DeepVariant](https://github.com/google/deepvariant), using two-pass method (DeepVariant :arrow_right: WhatsHap `phase` :arrow_right: WhatsHap `haplotag` :arrow_right: DeepVariant)
+3) phase small variants with [WhatsHap](https://github.com/whatshap/whatshap)
+4) haplotag aligned BAMs with WhatsHap and merge
+
 ## Directory structure within basedir
 
 ```text
