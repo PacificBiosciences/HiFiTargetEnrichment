@@ -1,0 +1,13 @@
+# temporary storage
+tmpdir: '/scratch'
+
+# deepvariant
+#DEEPVARIANT_VERSION: '1.2.0'  # CPU-only, will require modifying threads for call_variants rules
+DEEPVARIANT_VERSION: '1.2.0-gpu'  # GPU
+N_SHARDS: 256
+
+ref:
+  shortname: 'ref'
+  fasta: 'reference/reference.fasta'
+  index: 'reference/reference.fasta.fai'
+  chr_lengths: 'reference/reference.chr_lengths.txt'  # cut -f1,2 reference.fasta.fa > reference.chr_lengths.txt
