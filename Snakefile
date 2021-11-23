@@ -41,13 +41,7 @@ abam_dict = {movie: f"samples/{sample}/aligned/{movie}.{ref}.bam" for movie in m
 # build a list of targets
 targets = []
 include: 'rules/common.smk'
-
-# add ubams and fastqs to targets so that md5sums will be written
-targets.extend(ubam_dict.values())
-targets.extend(fastq_dict.values())
-
-# call small variants with DeepVariant
-# phase small variants with WhatsHap
+include: 'rules/pbmm2.smk'
 include: 'rules/deepvariant.smk'
 include: 'rules/whatshap.smk'
 targets.extend([f"samples/{sample}/deepvariant/{sample}.{ref}.deepvariant.{suffix}"
