@@ -3,7 +3,7 @@ localrules: bgzip_vcf, tabix_vcf
 
 rule bgzip_vcf:
     input: f"samples/{sample}/{{prefix}}.vcf"
-    output: temp(f"samples/{sample}/{{prefix}}.vcf.gz")
+    output: f"samples/{sample}/{{prefix}}.vcf.gz"
     log: f"samples/{sample}/logs/bgzip/{{prefix}}.log"
     threads: 2
     conda: "envs/htslib.yaml"
@@ -13,7 +13,7 @@ rule bgzip_vcf:
 
 rule tabix_vcf:
     input: f"samples/{sample}/{{prefix}}.vcf.gz"
-    output: temp(f"samples/{sample}/{{prefix}}.vcf.gz.tbi")
+    output: f"samples/{sample}/{{prefix}}.vcf.gz.tbi"
     log: f"samples/{sample}/logs/tabix/index/{{prefix}}.log"
     params: "-p vcf"
     conda: "envs/htslib.yaml"
