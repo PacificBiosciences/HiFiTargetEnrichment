@@ -12,7 +12,7 @@ mkdir -p "samples/${SAMPLE}/"
 LOCKFILE="samples/${SAMPLE}/process_sample.lock"
 
 # add lockfile to directory to prevent multiple simultaneous jobs
-lockfile -r 0 ${LOCKFILE} || exit 1
+lockfile -r 0 "${LOCKFILE}" || exit 1
 trap "rm -f ${LOCKFILE}; exit" SIGINT SIGTERM ERR EXIT
 
 # execute snakemake
