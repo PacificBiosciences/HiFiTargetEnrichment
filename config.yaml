@@ -2,8 +2,7 @@
 tmpdir: '/scratch'
 
 # deepvariant
-#DEEPVARIANT_VERSION: '1.2.0'  # CPU-only, will require modifying threads for call_variants rules
-DEEPVARIANT_VERSION: '1.2.0-gpu'  # GPU
+DEEPVARIANT_VERSION: '1.3.0-gpu'  # GPU
 N_SHARDS: 256
 
 ref:

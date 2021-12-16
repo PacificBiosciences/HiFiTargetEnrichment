@@ -16,6 +16,7 @@ rule deepvariant_make_examples_round1:
         f"docker://google/deepvariant:{config['DEEPVARIANT_VERSION']}"
     params:
         vsc_min_fraction_indels="0.12",
+        pileup_image_width=199,
         shard=lambda wildcards: wildcards.shard,
         reads=",".join(abams),
     message:
@@ -25,6 +26,7 @@ rule deepvariant_make_examples_round1:
         (/opt/deepvariant/bin/make_examples \
             --norealign_reads \
             --vsc_min_fraction_indels {{params.vsc_min_fraction_indels}} \
+            --pileup_image_width {{params.pileup_image_width}} \
             --alt_aligned_pileup=diff_channels \
             --add_hp_channel \
             --sort_by_haplotypes \
@@ -119,6 +121,7 @@ rule deepvariant_make_examples_round2:
         f"docker://google/deepvariant:{config['DEEPVARIANT_VERSION']}"
     params:
         vsc_min_fraction_indels="0.12",
+        pileup_image_width=199,
         shard=lambda wildcards: wildcards.shard,
         reads=",".join(haplotagged_abams),
     message:
@@ -128,6 +131,7 @@ rule deepvariant_make_examples_round2:
         (/opt/deepvariant/bin/make_examples \
             --norealign_reads \
             --vsc_min_fraction_indels {{params.vsc_min_fraction_indels}} \
+            --pileup_image_width {{params.pileup_image_width}} \
             --alt_aligned_pileup=diff_channels \
             --add_hp_channel \
             --sort_by_haplotypes \
