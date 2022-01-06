@@ -78,7 +78,7 @@ rule whatshap_phase_round2:
         phaseinput=abams,
         phaseinputindex=[f"{x}.bai" for x in abams],
     output:
-        temp(f"samples/{sample}/whatshap/{sample}.{ref}.deepvariant.phased.vcf.gz"),
+        f"samples/{sample}/whatshap/{sample}.{ref}.deepvariant.phased.vcf.gz",
     log:
         f"samples/{sample}/logs/whatshap/phase/{sample}.{ref}.log",
     params:
