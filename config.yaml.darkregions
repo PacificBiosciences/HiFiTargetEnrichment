@@ -6,9 +6,9 @@ barcodes: 'barcodes/Sequel_96_barcodes_v1.IDT_pad.fasta'
 
 # Targets
 beds:
-    targets: 'targets/brca/target_regions.bed'
-    probes: 'targets/brca/Probes_merged_ok_PacBio_BRCA1_2_TE-92415932_LongRead_p1X_hg38_220105185650.bed'
-    exons: 'targets/brca/brca_exons.bed'
+    targets: 'targets/dark_regions/all_targets_BCMHGSC_WGSplus_long_read_0p1X_TE-98646813_hg38.bed'
+    probes: 'targets/dark_regions/FAKE_dark_regions_probes.bed'
+    exons: 'targets/dark_regions/all_targets_BCMHGSC_WGSplus_long_read_0p1X_TE-98646813_hg38_Exons.bed'
 
 # deepvariant
 DEEPVARIANT_VERSION: '1.3.0-gpu'  # GPU

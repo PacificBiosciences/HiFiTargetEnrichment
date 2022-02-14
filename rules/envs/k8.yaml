@@ -1,0 +1,4 @@
+channels:
+  - bioconda
+dependencies:
+  - k8==0.2.5

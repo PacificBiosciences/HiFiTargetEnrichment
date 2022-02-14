@@ -1,0 +1,7 @@
+channels:
+  - ohmeta
+  - bioconda
+  - conda-forge
+  - defaults
+dependencies:
+  - gfatools==0.4

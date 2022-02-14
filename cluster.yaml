@@ -3,10 +3,20 @@ __default__:
   cpus: 1
   extra: ''
   out: cluster_logs/slurm-%x-%j-%N.out
+demux_ubam:
+  cpus: 24
+demux_fastq:
+  cpus: 24
+dedup_ubam:
+  cpus: 16
+dedup_fastq:
+  cpus: 16
 pbmm2_align_ubam:
   cpus: 24
 pbmm2_align_fastq:
   cpus: 24
+pbsv_call:
+  cpus: 8
 bgzip_vcf:
   cpus: 2
 deepvariant_make_examples_round1:
@@ -29,6 +39,8 @@ deepvariant_postprocess_variants_round2:
   extra: '--constraint=avx512'
 deepvariant_bcftools_stats:
   cpus: 4
+hifiasm_assemble:
+  cpus: 24
 samtools_index_bam_haplotag1:
   cpus: 4
 samtools_index_bam_haplotag2:
