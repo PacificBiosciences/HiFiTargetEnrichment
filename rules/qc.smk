@@ -312,7 +312,7 @@ rule plot_read_metrics:
             ]
         ],
     params:
-        script='dev_pipeline/plot_read_data.py',
+        script=f'{config["scripts"]}/plot_read_data.py',
         odir=f'batches/{batch}/{{sample}}/read_metrics',
     shell:
         '''
@@ -325,7 +325,7 @@ rule plot_coverage:
     output:
         f'batches/{batch}/{{sample}}/coverage/coverage_by_target.png',
     params:
-        script='dev_pipeline/plot_coverage.py',
+        script=f'{config["scripts"]}/plot_coverage.py',
         odir=f'batches/{batch}/{{sample}}/coverage',
     shell:
         '''
@@ -337,7 +337,7 @@ rule plot_multi_coverage:
     output:
         f'batches/{batch}/stats/multi_coverage_by_target.png',
     params:
-        script='dev_pipeline/plot_multi_coverage.py',
+        script=f'{config["scripts"]}/plot_multi_coverage.py',
         odir=f'batches/{batch}/stats',
     shell:
         '''
@@ -360,7 +360,7 @@ rule plot_multi_read:
             ]
         ],
     params:
-        script='dev_pipeline/plot_multi_reads.py',
+        script=f'{config["scripts"]}/plot_multi_reads.py',
         odir=f'batches/{batch}/stats',
     shell:
         '''
@@ -375,7 +375,7 @@ rule plot_read_categories:
     output:
         f'batches/{batch}/stats/read_categories_{{movie}}.png',
     params:
-        script='dev_pipeline/plot_read_cats.py',
+        script=f'{config["scripts"]}/plot_read_cats.py',
     shell:
         '''
         {params.script} {input.readCsv} {input.lima} {input.dups} {output}

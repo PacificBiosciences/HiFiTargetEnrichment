@@ -23,6 +23,7 @@ snakemake --reason \
     --printshellcmds \
     --config batch="${BATCH}" \
              biosamples="${BIOSAMPLES}" \
+             scripts=workflow/scripts \
     --nolock \
     --local-cores 4 \
     --jobs 500 \
