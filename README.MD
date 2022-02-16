@@ -1,4 +1,4 @@
-# HiFi DeepVariant + WhatsHap workflow
+# HiFi Targeted probe=capture workflow
 
 ## Workflow steps
 
@@ -16,20 +16,40 @@
 │   ├── reference.chr_lengths.txt  # cut -f1,2 reference.fasta > reference.chr_lengths.txt
 │   ├── reference.fasta
 │   └── reference.fasta.fai
-├── samples
-│   └── <sample_id>  # sample_id regex: r'[A-Za-z0-9_-]+'
-│       ├── whatshap/  # phased small variants; merged haplotagged alignments
+├── batches
+│   └── <batch_id>  # bpatch_id
+│       ├── benchmarks/  # cpu time per task
+│       ├── demux/  # demultiplexed hifi reads
 │       ├── logs/  # per-rule stdout/stderr logs
-│       ├── aligned/  # intermediate
-│       ├── deepvariant/  # intermediate
-│       ├── deepvariant_intermediate/  # intermediate
-│       └── whatshap_intermediate/  # intermediate
+│       ├── stats/  # batch-wide collated reports
+│       ├── <sample_id 1>/  # per-sample results, one for each sample
+│       :        ...
+│       └── <sample_id n>/  # per-sample results, one for each sample
+│           ├── aligned/  # intermediate
+│           ├── counts/ # read counts by target beds
+│           ├── coverage/ # read coverage by target beds
+│           ├── dedup/ # deduplicated output, incl separate duplicate data
+│           ├── deepvariant/  # intermediate
+│           ├── deepvariant_intermediate/  # intermediate
+│           ├── fasta/  # intermediate
+│           ├── hifiasm/  # assembly
+│           ├── pbsv/  # SV calls (not merged with whatshap)
+│           ├── read_metrics/  # per-read information
+│           ├── whatshap/  # phased small variants; merged haplotagged alignments
+│           └── whatshap_intermediate/  # intermediate
 ├── smrtcells
-│   ├── done  # move folders from smrtcells/ready to smrtcells/done to prevent re-processing
-│   └── ready
-│       └── <sample_id>  # uBAMs or FASTQs per sample
+│   ├── done  # move folders from smrtcells/ready to smrtcells/done to prevent re-processing (not currently used for capture)
+│   └── capture/  # location for capture cells
+│       └── ready
+│           └── <sample_id>  # uBAMs or FASTQs per sample, also biosample csv files can be put here
 │                        # filename regex: r'm\d{5}[Ue]?_\d{6}_\d{6}).(ccs|hifi_reads).bam' or r'm\d{5}[Ue]?_\d{6}_\d{6}).fastq.gz'
 └── workflow  # clone of this repo
+    └── targets  # 
+        └── <panel>/  # different target panels can go here
+            ├── <targets>.bed  # bed file of target regions (typically one or a couple per gene)
+            ├── <probes>.bed  # bed file of probe locations
+            └── <exons>.bed  # bed file of exons within targets
+         
 ```
 
 ## To run the pipeline
@@ -58,5 +78,5 @@ $ ln -s /path/to/some/hifi/data/m00000_000000_000000.hifi_reads.bam smrtcells/ca
 $ ln -s /path/to/some/hifi/data/m11111_111111_111111.hifi_reads.bam smrtcells/capture/ready/<sample_id>/m11111_111111_111111.hifi_reads.bam
 
 # run the workflow for sample <sample_id>
-$ sbatch workflow/run_snakemake.sh <sample_id>
+$ sbatch workflow/run_snakemake_capture.sh <sample_id> <biosample_csv> <config.yaml>
 ```

@@ -9,6 +9,13 @@ umask 002
 
 BATCH=$1
 BIOSAMPLES=$2
+CONFIG=$3
+
+if [ -z $3 ] || [ "$1" == "-h" ] || [ "$1" == "--help" ]; then
+ echo -e "\nUsage: $(basename $0) <batch_name> <biosample_csv> <config_yaml>\n"
+ exit 0
+fi
+
 mkdir -p "batches/${BATCH}/"
 LOCKFILE="batches/${BATCH}/process_batch.lock"
 
@@ -21,6 +28,7 @@ snakemake --reason \
     --rerun-incomplete \
     --keep-going \
     --printshellcmds \
+    --configfile "${CONFIG}" \
     --config batch="${BATCH}" \
              biosamples="${BIOSAMPLES}" \
              scripts=workflow/scripts \

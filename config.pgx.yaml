@@ -2,13 +2,13 @@
 tmpdir: '/scratch'
 
 #demux
-barcodes: 'barcodes/Sequel_96_barcodes_v1.IDT_pad.fasta'
+barcodes: 'workflow/barcodes/Sequel_96_barcodes_v1.IDT_pad.fasta'
 
 # Targets
 beds:
-    targets: 'targets/PacBio-PGx_genes_hg38_target.bed'
-    probes: 'targets/PacBio-full_opt_design_p1X_hg38_TE-97333771_probe_gene_names.bed'
-    exons: 'targets/Exons_coding_refseq_named.bed'
+    targets: 'workflow/targets/PacBio-PGx_genes_hg38_target.bed'
+    probes: 'workflow/targets/PacBio-full_opt_design_p1X_hg38_TE-97333771_probe_gene_names.bed'
+    exons: 'workflow/targets/Exons_coding_refseq_named.bed'
 
 # deepvariant
 DEEPVARIANT_VERSION: '1.3.0-gpu'  # GPU
@@ -19,7 +19,7 @@ ref:
   fasta: 'reference/human_GRCh38_no_alt_analysis_set.fasta'
   index: 'reference/human_GRCh38_no_alt_analysis_set.fasta.fai'
   chr_lengths: 'reference/human_GRCh38_no_alt_analysis_set.chr_lengths.txt'  # cut -f1,2 reference.fasta.fa > reference.chr_lengths.txt
-  tr_bed: 'targets/tandem_repeats.bed'
+  tr_bed: 'workflow/targets/tandem_repeats.bed'
 
 # extra
 QC:
