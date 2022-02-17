@@ -40,12 +40,14 @@
 ├── smrtcells
 │   ├── done  # move folders from smrtcells/ready to smrtcells/done to prevent re-processing (not currently used for capture)
 │   └── capture/  # location for capture cells
-│       └── ready
-│           └── <sample_id>  # uBAMs or FASTQs per sample, also biosample csv files can be put here
+│       └── ready/
+│           └── <sample_id>/  # uBAMs or FASTQs per sample, also biosample csv files can be put here
 │                        # filename regex: r'm\d{5}[Ue]?_\d{6}_\d{6}).(ccs|hifi_reads).bam' or r'm\d{5}[Ue]?_\d{6}_\d{6}).fastq.gz'
 └── workflow  # clone of this repo
     └── targets  # 
-        └── <panel>/  # different target panels can go here
+        ├── <panel 1> # # different target panels can go here
+        :    ...
+        └── <panel n>  # different target panels can go here
             ├── <targets>.bed  # bed file of target regions (typically one or a couple per gene)
             ├── <probes>.bed  # bed file of probe locations
             └── <exons>.bed  # bed file of exons within targets
