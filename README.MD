@@ -1,11 +1,15 @@
 # HiFi Targeted probe=capture workflow
 
 ## Workflow steps
-
-1) align HiFi reads to reference with [pbmm2](https://github.com/PacificBiosciences/pbmm2)
-2) call small variants with [DeepVariant](https://github.com/google/deepvariant), using two-pass method (DeepVariant :arrow_right: WhatsHap `phase` :arrow_right: WhatsHap `haplotag` :arrow_right: DeepVariant)
-3) phase small variants with [WhatsHap](https://github.com/whatshap/whatshap)
-4) haplotag aligned BAMs with WhatsHap and merge
+1) demulltiplex HiFi reads with [lima](https://github.com/pacificbiosciences/barcoding/)
+2) deduplicate HiFi reads by sample with [pbmarkdups](https://github.com/PacificBiosciences/pbmarkdup/)
+3) align HiFi reads to reference with [pbmm2](https://github.com/PacificBiosciences/pbmm2)
+4) call small variants with [DeepVariant](https://github.com/google/deepvariant), using two-pass method (DeepVariant :arrow_right: WhatsHap `phase` :arrow_right: WhatsHap `haplotag` :arrow_right: DeepVariant)
+5) phase small variants with [WhatsHap](https://github.com/whatshap/whatshap)
+6) haplotag aligned BAMs with WhatsHap
+7) call structural variants with [pbsv](https://github.com/pacificbiosciences/pbsv/)
+8) assemble reads with [hifiasm](https://github.com/chhylp123/hifiasm)
+9) Run some QC reports
 
 ## Directory structure within basedir
 
