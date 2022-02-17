@@ -79,10 +79,10 @@ $ mkdir -p reference smrtcells/capture/{ready,done} cluster_logs
 
 # drop your reference.fasta and reference.fasta.fai into reference and adjust the path in workflow/config.yaml
 
-# copy or link some data into a smrtcells/ready/<sample_id> directory
+# copy or link some data into a smrtcells/capture/ready/<batch_id> directory
 $ ln -s /path/to/some/hifi/data/m00000_000000_000000.hifi_reads.bam smrtcells/capture/ready/<batch_id>/m00000_000000_000000.hifi_reads.bam
 $ ln -s /path/to/some/hifi/data/m11111_111111_111111.hifi_reads.bam smrtcells/capture/ready/<batch_id>/m11111_111111_111111.hifi_reads.bam
 
-# run the workflow for sample <sample_id>
+# run the workflow for batch <batch_id>
 $ sbatch workflow/run_snakemake_capture.sh <batch_id> <biosample_csv> <config.yaml>
 ```
