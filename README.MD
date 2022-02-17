@@ -1,4 +1,4 @@
-# HiFi Targeted probe=capture workflow
+# HiFi Targeted probe-capture workflow
 
 ## Workflow steps
 1) demulltiplex HiFi reads with [lima](https://github.com/pacificbiosciences/barcoding/)
