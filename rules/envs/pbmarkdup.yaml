@@ -4,3 +4,4 @@ channels:
   - defaults
 dependencies:
   - pbmarkdup=1.0.2
+  - samtools==1.12

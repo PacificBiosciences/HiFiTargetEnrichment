@@ -2,7 +2,8 @@ import re
 from pathlib import Path
 
 
-configfile: "workflow/config.yaml"
+# get config file from run-script args for testing multiple panels
+#configfile: "workflow/config.yaml"
 
 
 ## prefix every task command with:
@@ -17,6 +18,8 @@ shell.prefix(
 batch = config["batch"]
 # Get expected barcodes and sample map from standard barcode_biosample_csv used in SL
 # map both directions
+# Assumes csv has header (actual names ignored).  
+# two columns barcode,sampleId
 barcode2sample = dict( row.split(',') 
                        for i,row in enumerate( open( config["biosamples"] ).read().strip().split('\n') )
                        if i > 0 )
@@ -27,6 +30,7 @@ print(f"Processing batch {batch} with reference {ref}.")
 # scan smrtcells/capture/ready for inputs
 # uBAMs have priority over FASTQs if both are available
 # samples and files are expected to match one of the following patterns:
+# movie-name requirement may be relaxed at later date (JH)
 ubam_pattern = re.compile(
     r"smrtcells/capture/ready/(?P<batch>[.A-Za-z0-9_-]+)/(?P<movie>m\d{5}[Ue]?_\d{6}_\d{6}).(ccs|hifi_reads).bam"
 )
