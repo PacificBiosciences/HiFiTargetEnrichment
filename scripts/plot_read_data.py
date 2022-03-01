@@ -1,5 +1,3 @@
-#! /home/UNIXHOME/jharting/anaconda3/bin/python3.7
-
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt

@@ -323,9 +323,11 @@ rule plot_read_metrics:
     params:
         script=f'{config["scripts"]}/plot_read_data.py',
         odir=f'batches/{batch}/{{sample}}/read_metrics',
+    conda:
+        'envs/python.yaml',
     shell:
         '''
-        {params.script} {input.csv} {input.bed} {params.odir}        
+        python {params.script} {input.csv} {input.bed} {params.odir}        
         '''
 
 rule plot_coverage:
@@ -336,10 +338,13 @@ rule plot_coverage:
     params:
         script=f'{config["scripts"]}/plot_coverage.py',
         odir=f'batches/{batch}/{{sample}}/coverage',
+    conda:
+        'envs/python.yaml',
     shell:
         '''
-        {params.script} {input} {params.odir}
+        python {params.script} {input} {params.odir}
         '''
+
 rule plot_multi_coverage:
     input:
         f'batches/{batch}/stats/all_targets_coverage.csv',
@@ -348,9 +353,11 @@ rule plot_multi_coverage:
     params:
         script=f'{config["scripts"]}/plot_multi_coverage.py',
         odir=f'batches/{batch}/stats',
+    conda:
+        'envs/python.yaml',
     shell:
         '''
-        {params.script} {input} {params.odir}
+        python {params.script} {input} {params.odir}
         '''
 
 rule plot_multi_read:
@@ -371,9 +378,11 @@ rule plot_multi_read:
     params:
         script=f'{config["scripts"]}/plot_multi_reads.py',
         odir=f'batches/{batch}/stats',
+    conda:
+        'envs/python.yaml',
     shell:
         '''
-        {params.script} {input.csv} {input.bed} {params.odir}
+        python {params.script} {input.csv} {input.bed} {params.odir}
         '''
 
 rule plot_read_categories:
@@ -385,9 +394,11 @@ rule plot_read_categories:
         f'batches/{batch}/stats/read_categories_{{movie}}.png',
     params:
         script=f'{config["scripts"]}/plot_read_cats.py',
+    conda:
+        'envs/python.yaml',
     shell:
         '''
-        {params.script} {input.readCsv} {input.lima} {input.dups} {output}
+        python {params.script} {input.readCsv} {input.lima} {input.dups} {output}
         '''
     
 
