@@ -34,7 +34,11 @@ pdata = data.query(' target != @ot ')\
             .groupby( 'target' )\
             .length.sum().reset_index()
 
-pdata['meanBaseCoverage'] = pdata.length / pdata.target.map(targets.tlength)
+try:
+    pdata['meanBaseCoverage'] = pdata.length / pdata.target.map(targets.tlength)
+except pd.errors.InvalidIndexError as e:
+    print(f'Error: Is your target name list unique?\n\n{e}')
+    sys.exit()
 
 order = sorted(pdata.target)
 g = sns.catplot(data=pdata,
@@ -62,7 +66,7 @@ pdata = data
 
 order = sorted(pdata.target.unique())
 g = sns.FacetGrid(data=pdata,
-                  clip=(0,10000),
+                  xlim=(0,10000),
                   col='target',col_wrap=7,
                   col_order=order,
                   hue='sample',

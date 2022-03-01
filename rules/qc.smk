@@ -16,7 +16,7 @@ rule count_ontarget:
     params:
         elem='{bedfile}',
     conda:
-        "envs/bedtools.yaml"
+        "envs/samtools.yaml"
     message:
         "Counting intersections of {wildcards.bedfile} with {input.bam}"
     shell:
@@ -42,7 +42,7 @@ rule get_coverage:
     params:
         sample='{sample}'
     conda:
-        "envs/bedtools.yaml"
+        "envs/samtools.yaml"
     message:
         "Getting coverage of {input.bed} from {input.bam}"
     shell:
@@ -107,18 +107,15 @@ rule summarize_coverage_fraction:
 
 rule get_read_metrics:
     input:
-        bed=config['beds']['targets'],
         bam=f"batches/{batch}/{{sample}}/aligned/{{sample}}.{ref}.bam",
     output:
         stats=(f'batches/{batch}/{{sample}}/read_metrics/reads.csv'),
-        target=(f'batches/{batch}/{{sample}}/read_metrics/read_target.csv'),
     conda:
-        "envs/bedtools.yaml",
+        "envs/samtools.yaml",
     message:
-        "Getting target read metrics from {input.bam}"
+        "Getting samtools target read metrics from {input.bam}"
     shell:
         '''
-        #from bam 
         samtools view -F 0x900 {input.bam} \
         | awk 'BEGIN {{ OFS="," ; print "readname,length,qual,ismapped,duplicates,softclip" }} \
                {{ if( match( $0, /ds:i:[0-9]/ ) ) {{ split( substr( $0, RSTART, RLENGTH ),d,":"); dup=d[3] }} \
@@ -134,8 +131,20 @@ rule get_read_metrics:
                   print $1, length($10), q[3], mapped, dup, soft \
                }}' \
         | ( sed -u 1q; sort) > {output.stats}
-        
-        #on-target
+        '''
+
+rule get_read_target_metrics:
+    input:
+        bed=config['beds']['targets'],
+        bam=f"batches/{batch}/{{sample}}/aligned/{{sample}}.{ref}.bam",
+    output:
+        target=(f'batches/{batch}/{{sample}}/read_metrics/read_target.csv'),
+    conda:
+        "envs/samtools.yaml",
+    message:
+        "Getting target read metrics from {input.bam}"
+    shell:
+        ''' 
         bedtools intersect -a <(samtools view -hbF 0x900 {input.bam}) -b {input.bed} -bed -loj \
         | awk 'BEGIN {{ print "readname,target" }} \
                {{ print $4","$NF }}' \
@@ -178,7 +187,7 @@ rule endmost_probe:
     output:
         (f'batches/{batch}/{{sample}}/read_metrics/endmost_probe.csv')
     conda:
-        "envs/bedtools.yaml"
+        "envs/samtools.yaml"
     message:
         "Finding endmost probe for {input.bam}"
     shell:
@@ -285,7 +294,7 @@ rule gc_content:
     output:
         f'batches/{batch}/stats/{{bedfile}}_frac_gc.csv',
     conda:
-        "envs/bedtools.yaml"
+        "envs/samtools.yaml"
     shell:
         '''
         bedtools nuc -fi {input.ref} -bed {input.bed} \

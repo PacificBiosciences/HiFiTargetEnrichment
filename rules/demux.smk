@@ -11,7 +11,8 @@ rule demux_ubam:
     params:
         odir=f'batches/{batch}/demux/{{movie}}',
         #preset='hifi-symmetric',
-        filters='--ccs --min-score 40 --min-end-score 40 --min-ref-span 0.75 --same',
+        #filters='--ccs --min-score 40 --min-end-score 40 --min-ref-span 0.75 --same',
+        filters='--hifi-preset SYMMETRIC-ADAPTERS',
         loglevel='INFO',
     threads:
         24
