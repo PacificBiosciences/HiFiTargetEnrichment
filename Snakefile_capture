@@ -74,6 +74,7 @@ include: "rules/deepvariant_capture.smk"
 include: "rules/whatshap_capture.smk"
 include: "rules/pbsv_capture.smk"
 include: "rules/hifiasm_capture.smk"
+include: "rules/glnexus.smk"
 
 # DV
 targets.extend(
@@ -111,6 +112,16 @@ targets.extend(
     [
         f"batches/{batch}/{sample}/pbsv/{sample}.{ref}.pbsv.vcf"
         for sample in sample2barcode.keys()
+    ]
+)
+
+# gVCF/cohort
+targets.extend(
+    [
+     f"batches/{batch}/whatshap_cohort/{batch}.{ref}.deepvariant.glnexus.phased.vcf.gz",
+     f"batches/{batch}/whatshap_cohort/{batch}.{ref}.deepvariant.glnexus.phased.gtf",
+     f"batches/{batch}/whatshap_cohort/{batch}.{ref}.deepvariant.glnexus.phased.tsv",
+     f"batches/{batch}/whatshap_cohort/{batch}.{ref}.deepvariant.glnexus.phased.blocklist"
     ]
 )
 

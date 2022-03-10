@@ -1,9 +1,9 @@
 localrules:
-    bgzip_vcf,
     tabix_vcf,
+    #bgzip_vcf_common,
 
 
-#rule bgzip_vcf:
+#rule bgzip_vcf_common:
 #    input:
 #        f"batches/{batch}/{{sample}}/{{prefix}}.vcf",
 #    output:
