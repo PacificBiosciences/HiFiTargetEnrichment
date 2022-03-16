@@ -12,7 +12,7 @@ rule demux_ubam:
         odir=f'batches/{batch}/demux/{{movie}}',
         #preset='hifi-symmetric',
         #filters='--ccs --min-score 40 --min-end-score 40 --min-ref-span 0.75 --same',
-        filters='--hifi-preset SYMMETRIC-ADAPTERS',
+        filters='--min-score 40 --min-end-score 40 --min-ref-span 0.75 --same --ignore-missing-adapters',
         loglevel='INFO',
     threads:
         24
@@ -46,7 +46,7 @@ rule demux_fastq:
     params:
         odir=f'batches/{batch}/demux/{{movie}}',
         #preset='hifi-symmetric',
-        filters='--ccs --min-score 40 --min-end-score 40 --min-ref-span 0.75 --same',
+        filters='--min-score 40 --min-end-score 40 --min-ref-span 0.75 --same --ignore-missing-adapters',
         loglevel='INFO',
     threads:
         24

@@ -7,7 +7,7 @@ barcodes: 'workflow/barcodes/Sequel_96_barcodes_v1.IDT_pad.fasta'
 # Targets
 beds:
     targets: 'workflow/targets/dark_regions/all_targets_BCMHGSC_WGSplus_long_read_0p1X_TE-98646813_hg38.bed'
-    probes: 'workflow/targets/dark_regions/FAKE_dark_regions_probes.bed'
+    probes: 'workflow/targets/dark_regions/final_Probes_ok_BCMHGSC_WGSplus_long_read_0p1X_TE-98646813_hg38.bed'
     exons: 'workflow/targets/dark_regions/all_targets_BCMHGSC_WGSplus_long_read_0p1X_TE-98646813_hg38_Exons.bed'
 merge: 1000000
 
