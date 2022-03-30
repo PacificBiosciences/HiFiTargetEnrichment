@@ -11,7 +11,7 @@ def _get_region(wildcards):
     
 checkpoint make_regions:
     input:
-        config['beds']['targets'],
+        config['targets'],
     output:
         f'batches/{batch}/glnexus/regions.bed',
     params:

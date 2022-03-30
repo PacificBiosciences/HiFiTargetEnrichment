@@ -29,3 +29,6 @@ GLNEXUS_VERSION: 'v1.4.1'
 QC:
     runQC: True
     lowcov: 7
+picard:
+  near_distance: 10000
+  sample_size: 1000

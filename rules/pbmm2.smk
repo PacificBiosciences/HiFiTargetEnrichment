@@ -2,15 +2,17 @@ rule pbmm2_align_ubam:
     input:
         reference=config["ref"]["fasta"],
         ref_index=config["ref"]["index"],
-        query=lambda wildcards: ubam_dict[wildcards.movie],
+        query=f'batches/{batch}/{{sample}}/downsampled/markdups.bam',
     output:
-        bam=temp(f"samples/{sample}/aligned/{{movie}}.{ref}.bam"),
-        bai=temp(f"samples/{sample}/aligned/{{movie}}.{ref}.bam.bai"),
+        bam=(f"batches/{batch}/{{sample}}/aligned/{{sample}}.{ref}.bam"),
+        bai=(f"batches/{batch}/{{sample}}/aligned/{{sample}}.{ref}.bam.bai"),
     log:
-        f"samples/{sample}/logs/pbmm2/align/{{movie}}.{ref}.log",
+        f"batches/{batch}/logs/pbmm2/align/{{sample}}.{ref}.log",
+    benchmark:
+        f"batches/{batch}/benchmarks/{{sample}}.pbmm2.bam.tsv"
     params:
-        sample=f"{sample}",
-        preset="CCS",
+        sample="{sample}",
+        preset="HiFi",
         extra="--sort --unmapped -c 0 -y 70",
         loglevel="INFO",
     threads: 24
@@ -30,20 +32,21 @@ rule pbmm2_align_ubam:
             {output.bam}) > {log} 2>&1
         """
 
-
 rule pbmm2_align_fastq:
     input:
         reference=config["ref"]["fasta"],
         ref_index=config["ref"]["index"],
-        query=lambda wildcards: fastq_dict[wildcards.movie],
+        query=lambda wildcards: f'batches/{batch}/{{sample}}/downsampled/markdups.fastq',
     output:
-        bam=temp(f"samples/{sample}/aligned/{{movie}}.{ref}.bam"),
-        bai=temp(f"samples/{sample}/aligned/{{movie}}.{ref}.bam.bai"),
+        bam=(f"batches/{batch}/{{sample}}/aligned/{{sample}}.{ref}.bam"),
+        bai=(f"batches/{batch}/{{sample}}/aligned/{{sample}}.{ref}.bam.bai"),
     log:
-        f"samples/{sample}/logs/pbmm2/align/{{movie}}.{ref}.log",
+        f"batches/{batch}/logs/pbmm2/align/{{sample}}.{ref}.log",
+    benchmark:
+        f"batches/{batch}/benchmarks/{{sample}}.pbmm2.fastq.tsv"
     params:
-        sample=f"{sample}",
-        preset="CCS",
+        sample="{sample}",
+        preset="HiFi",
         extra="--sort --unmapped -c 0 -y 70",
         loglevel="INFO",
     threads: 24

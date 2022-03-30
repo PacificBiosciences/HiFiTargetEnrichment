@@ -1,0 +1,38 @@
+# temporary storage
+tmpdir : '/scratch'
+
+#demux
+barcodes : 'workflow/barcodes/Sequel_96_barcodes_v1.IDT_pad.fasta'
+
+# Targets
+#beds:
+#    targets: 'workflow/targets/dark_regions/all_targets_BCMHGSC_WGSplus_long_read_0p1X_TE-98646813_hg38.bed'
+#    probes: 'workflow/targets/dark_regions/final_Probes_ok_BCMHGSC_WGSplus_long_read_0p1X_TE-98646813_hg38.bed'
+#    exons: 'workflow/targets/dark_regions/all_targets_BCMHGSC_WGSplus_long_read_0p1X_TE-98646813_hg38_Exons.bed'
+
+# deepvariant
+DEEPVARIANT_VERSION : '1.3.0-gpu'  # GPU
+N_SHARDS            : 96
+
+ref :
+  shortname   : 'GRCh38_noalt'
+  fasta       : 'reference/human_GRCh38_no_alt_analysis_set.fasta'
+  index       : 'reference/human_GRCh38_no_alt_analysis_set.fasta.fai'
+  chr_lengths : 'reference/human_GRCh38_no_alt_analysis_set.chr_lengths.txt'  # cut -f1,2 reference.fasta.fa > reference.chr_lengths.txt
+  tr_bed      : 'workflow/targets/tandem_repeats.bed'
+  exons       : 'workflow/targets/all_hg38_exons_ensembl.bed'
+
+# glnexus
+GLNEXUS_VERSION : 'v1.4.1'
+merge : 1000000
+
+# extra
+QC :
+    runQC  : True
+    lowcov : 7
+
+picard :
+  near_distance : 10000
+  sample_size   : 1000
+
+downsample : 100000

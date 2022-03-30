@@ -2,14 +2,15 @@
 
 ## Workflow steps
 1) demulltiplex HiFi reads with [lima](https://github.com/pacificbiosciences/barcoding/)
-2) deduplicate HiFi reads by sample with [pbmarkdups](https://github.com/PacificBiosciences/pbmarkdup/)
+2) Mark PCR duplicate HiFi reads by sample with [pbmarkdups](https://github.com/PacificBiosciences/pbmarkdup/)
 3) align HiFi reads to reference with [pbmm2](https://github.com/PacificBiosciences/pbmm2)
 4) call small variants with [DeepVariant](https://github.com/google/deepvariant), using two-pass method (DeepVariant :arrow_right: WhatsHap `phase` :arrow_right: WhatsHap `haplotag` :arrow_right: DeepVariant)
 5) phase small variants with [WhatsHap](https://github.com/whatshap/whatshap)
 6) haplotag aligned BAMs with WhatsHap
 7) call structural variants with [pbsv](https://github.com/pacificbiosciences/pbsv/)
 8) assemble reads with [hifiasm](https://github.com/chhylp123/hifiasm)
-9) Run some QC reports
+9) jointly call all variants with glnexus
+10) [optionally] Run some QC reports
 
 ## Directory structure within basedir
 
@@ -25,36 +26,34 @@
 │       ├── benchmarks/  # cpu time per task
 │       ├── demux/  # demultiplexed hifi reads
 │       ├── logs/  # per-rule stdout/stderr logs
+│       ├── picard/  # interval lists for hsmetrics
 │       ├── stats/  # batch-wide collated reports
+│       ├── whatshap_cohort/  # joint-called, phased SNV
 │       ├── <sample_id 1>/  # per-sample results, one for each sample
 │       :        ...
 │       └── <sample_id n>/  # per-sample results, one for each sample
 │           ├── aligned/  # intermediate
 │           ├── counts/ # read counts by target beds
 │           ├── coverage/ # read coverage by target beds
-│           ├── dedup/ # deduplicated output, incl separate duplicate data
 │           ├── deepvariant/  # intermediate
 │           ├── deepvariant_intermediate/  # intermediate
+│           ├── downsampled/ # downsampled reads, see config.yaml for downsample max reads
 │           ├── fasta/  # intermediate
 │           ├── hifiasm/  # assembly
+│           ├── hs_metrics/ # picard hsmetrics for this sample
+│           ├── markdup/ # unaligned reads with PCR dups marked
 │           ├── pbsv/  # SV calls (not merged with whatshap)
 │           ├── read_metrics/  # per-read information
 │           ├── whatshap/  # phased small variants; merged haplotagged alignments
 │           └── whatshap_intermediate/  # intermediate
-├── smrtcells
-│   ├── done  # move folders from smrtcells/ready to smrtcells/done to prevent re-processing (not currently used for capture)
-│   └── capture/  # location for capture cells
-│       └── ready/
-│           └── <sample_id>/  # uBAMs or FASTQs per sample, also biosample csv files can be put here
-│                        # filename regex: r'm\d{5}[Ue]?_\d{6}_\d{6}).(ccs|hifi_reads).bam' or r'm\d{5}[Ue]?_\d{6}_\d{6}).fastq.gz'
+│ 
 └── workflow  # clone of this repo
-    └── targets  # 
+    └── targets  # Convenient share-able location for target panels during dev; to be removed for customers
         ├── <panel 1> # # different target panels can go here
         :    ...
         └── <panel n>  # different target panels can go here
             ├── <targets>.bed  # bed file of target regions (typically one or a couple per gene)
-            ├── <probes>.bed  # bed file of probe locations
-            └── <exons>.bed  # bed file of exons within targets
+            └── <probes>.bed  # bed file of probe locations
          
 ```
 
@@ -74,15 +73,11 @@ $ conda activate ./conda_env
 # clone the github repo
 $ git clone https://github.com/jrharting/hifi-probe-capture-workflow.git workflow
 
-# create a few directories
-$ mkdir -p reference smrtcells/capture/{ready,done} cluster_logs
+# create a couple directories
+$ mkdir reference cluster_logs
 
 # drop your reference.fasta and reference.fasta.fai into reference and adjust the path in workflow/config.yaml
 
-# copy or link some data into a smrtcells/capture/ready/<batch_id> directory
-$ ln -s /path/to/some/hifi/data/m00000_000000_000000.hifi_reads.bam smrtcells/capture/ready/<batch_id>/m00000_000000_000000.hifi_reads.bam
-$ ln -s /path/to/some/hifi/data/m11111_111111_111111.hifi_reads.bam smrtcells/capture/ready/<batch_id>/m11111_111111_111111.hifi_reads.bam
-
 # run the workflow for batch <batch_id>
-$ sbatch workflow/run_snakemake_capture.sh <batch_id> <biosample_csv> <config.yaml>
+$ sbatch workflow/run_snakemake.sh <batch_name> <biosample_csv> <hifi_reads> <target_bed> <probe_bed>
 ```

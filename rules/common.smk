@@ -1,31 +1,31 @@
 localrules:
-    bgzip_vcf,
     tabix_vcf,
+    #bgzip_vcf_common,
 
 
-rule bgzip_vcf:
-    input:
-        f"samples/{sample}/{{prefix}}.vcf",
-    output:
-        f"samples/{sample}/{{prefix}}.vcf.gz",
-    log:
-        f"samples/{sample}/logs/bgzip/{{prefix}}.log",
-    threads: 2
-    conda:
-        "envs/htslib.yaml"
-    message:
-        "Executing {rule}: Compressing {input}."
-    shell:
-        "(bgzip --threads {threads} {input}) > {log} 2>&1"
+#rule bgzip_vcf_common:
+#    input:
+#        f"batches/{batch}/{{sample}}/{{prefix}}.vcf",
+#    output:
+#        f"batches/{batch}/{{sample}}/{{prefix}}.vcf.gz",
+#    log:
+#        f"batches/{batch}/logs/bgzip/{{sample}}.{{prefix}}.log",
+#    threads: 2
+#    conda:
+#        "envs/htslib.yaml"
+#    message:
+#        "Executing {rule}: Compressing {input}."
+#    shell:
+#        "(bgzip --threads {threads} {input}) > {log} 2>&1"
 
 
 rule tabix_vcf:
     input:
-        f"samples/{sample}/{{prefix}}.vcf.gz",
+        f"batches/{batch}/{{sample}}/{{prefix}}.vcf.gz",
     output:
-        f"samples/{sample}/{{prefix}}.vcf.gz.tbi",
+        f"batches/{batch}/{{sample}}/{{prefix}}.vcf.gz.tbi",
     log:
-        f"samples/{sample}/logs/tabix/index/{{prefix}}.log",
+        f"batches/{batch}/logs/tabix/index/{{sample}}.{{prefix}}.log",
     params:
         "-p vcf",
     conda:

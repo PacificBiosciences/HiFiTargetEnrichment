@@ -1,8 +1,7 @@
 import re
-from pathlib import Path
 
-
-configfile: "workflow/config.yaml"
+# get config file from run-script args for testing multiple panels
+#configfile: "workflow/config.yaml"
 
 
 ## prefix every task command with:
@@ -14,51 +13,40 @@ shell.prefix(
     f"set -o pipefail; umask 002; export TMPDIR={config['tmpdir']}; export SINGULARITY_TMPDIR={config['tmpdir']}; "
 )
 
-sample = config["sample"]
+batch = config["batch"]
+movie = config["ccsReads"]
+# Get expected barcodes and sample map from standard barcode_biosample_csv used in SL
+# map both directions
+# Assumes csv has header (actual names ignored).  
+# two columns barcode,sampleId
+barcode2sample = dict( row.split(',') 
+                       for i,row in enumerate( open( config["biosamples"] ).read().strip().split('\n') )
+                       if i > 0 )
+sample2barcode = { v:k for k,v in barcode2sample.items() }
 ref = config["ref"]["shortname"]
-print(f"Processing sample {sample} with reference {ref}.")
+print(f"Processing batch {batch} with reference {ref}.")
 
-# scan smrtcells/ready for inputs
-# uBAMs have priority over FASTQs if both are available
-# samples and files are expected to match one of the following patterns:
-ubam_pattern = re.compile(
-    r"smrtcells/ready/(?P<sample>[A-Za-z0-9_-]+)/(?P<movie>m\d{5}[Ue]?_\d{6}_\d{6}).(ccs|hifi_reads).bam"
-)
-ubam_dict = {}
-fastq_pattern = re.compile(
-    r"smrtcells/ready/(?P<sample>[A-Za-z0-9_-]+)/(?P<movie>m\d{5}[Ue]?_\d{6}_\d{6}).fastq.gz"
-)
-fastq_dict = {}
-for infile in Path("smrtcells/ready").glob(f"{sample}/*.bam"):
-    ubam_match = ubam_pattern.search(str(infile))
-    if ubam_match:
-        # create a dict-of-dict to link samples to movie context to uBAM filenames
-        ubam_dict[ubam_match.group("movie")] = str(infile)
-for infile in Path("smrtcells/ready").glob(f"{sample}/*.fastq.gz"):
-    fastq_match = fastq_pattern.search(str(infile))
-    if fastq_match:
-        # create a dict-of-dict to link samples to movie context to FASTQ filenames
-        fastq_dict[fastq_match.group("movie")] = str(infile)
-
-# create a list of movies from the uBAMs and FASTQs
-movies = list(set(list(ubam_dict.keys()) + list(fastq_dict.keys())))
-# create a list of aBAMs that will be generated
-abams = [f"samples/{sample}/aligned/{movie}.{ref}.bam" for movie in movies]
-abam_dict = {movie: f"samples/{sample}/aligned/{movie}.{ref}.bam" for movie in movies}
-
-# build a list of targets
-targets = []
+targets = [
+            f'batches/{batch}/demux/demultiplex.{barcode}.bam'
+            for barcode in sample2barcode.values()
+           ]
 
 
 include: "rules/common.smk"
+include: "rules/demux.smk"
+include: "rules/preprocess.smk"
 include: "rules/pbmm2.smk"
 include: "rules/deepvariant.smk"
 include: "rules/whatshap.smk"
+include: "rules/pbsv.smk"
+include: "rules/hifiasm.smk"
+include: "rules/glnexus.smk"
+include: "rules/hsmetrics.smk"
 
-
+# DV
 targets.extend(
     [
-        f"samples/{sample}/deepvariant/{sample}.{ref}.deepvariant.{suffix}"
+        f"batches/{batch}/{sample}/deepvariant/{sample}.{ref}.deepvariant.{suffix}"
         for suffix in [
             "vcf.gz",
             "vcf.gz.tbi",
@@ -67,11 +55,13 @@ targets.extend(
             "visual_report.html",
             "vcf.stats.txt",
         ]
+        for sample in sample2barcode.keys()
     ]
 )
+# WH
 targets.extend(
     [
-        f"samples/{sample}/whatshap/{sample}.{ref}.deepvariant.{suffix}"
+        f"batches/{batch}/{sample}/whatshap/{sample}.{ref}.deepvariant.{suffix}"
         for suffix in [
             "phased.vcf.gz",
             "phased.vcf.gz.tbi",
@@ -81,11 +71,44 @@ targets.extend(
             "haplotagged.bam",
             "haplotagged.bam.bai",
         ]
+        for sample in sample2barcode.keys()
+    ]
+)
+#SV
+targets.extend(
+    [
+        f"batches/{batch}/{sample}/pbsv/{sample}.{ref}.pbsv.vcf"
+        for sample in sample2barcode.keys()
+    ]
+)
+
+# gVCF/cohort
+targets.extend(
+    [
+     f"batches/{batch}/whatshap_cohort/{batch}.{ref}.deepvariant.glnexus.phased.vcf.gz",
+     f"batches/{batch}/whatshap_cohort/{batch}.{ref}.deepvariant.glnexus.phased.gtf",
+     f"batches/{batch}/whatshap_cohort/{batch}.{ref}.deepvariant.glnexus.phased.tsv",
+     f"batches/{batch}/whatshap_cohort/{batch}.{ref}.deepvariant.glnexus.phased.blocklist"
+    ]
+)
+
+# HiFiasm
+targets.extend(
+    [
+        f"batches/{batch}/{sample}/hifiasm/{sample}.asm.{ref}.htsbox.vcf.stats.txt"
+        for sample in sample2barcode.keys()
     ]
 )
 
 
+# QC extras
+if config['QC']['runQC']:
+    include: "rules/qc.smk"
+
+ruleorder: demux_ubam > demux_fastq
+ruleorder: downsample_bam > downsample_fastq
 ruleorder: pbmm2_align_ubam > pbmm2_align_fastq
+ruleorder: deepvariant_postprocess_variants_round2 > deepvariant_postprocess_variants_round1 > tabix_vcf
 
 
 rule all:

@@ -1,15 +1,15 @@
 rule demux_ubam:
     input:
-        reads=lambda wildcards: ubam_dict[wildcards.movie],
+        reads=movie,
         barcodes=config["barcodes"],
         biosamples=config["biosamples"],
     output:
-        expand( f'batches/{batch}/demux/' + '{{movie}}/demultiplex.{barcode}.bam', barcode=barcode2sample.keys() ),
-        f'batches/{batch}/demux/{{movie}}/demultiplex.lima.report',
+        expand( f'batches/{batch}/demux/demultiplex.{{barcode}}.bam', barcode=barcode2sample.keys() ),
+        f'batches/{batch}/demux/demultiplex.lima.report',
     log:
-        f"batches/{batch}/logs/lima/demux/{{movie}}.log",
+        f"batches/{batch}/logs/lima/demux.log",
     params:
-        odir=f'batches/{batch}/demux/{{movie}}',
+        odir=f'batches/{batch}/demux/',
         #preset='hifi-symmetric',
         #filters='--ccs --min-score 40 --min-end-score 40 --min-ref-span 0.75 --same',
         filters='--min-score 40 --min-end-score 40 --min-ref-span 0.75 --same --ignore-missing-adapters',
@@ -17,7 +17,7 @@ rule demux_ubam:
     threads:
         24
     benchmark:
-        f"batches/{batch}/benchmarks/{{movie}}.demux.bam.tsv",
+        f"batches/{batch}/benchmarks/lima/demux.tsv",
     conda:
         'envs/lima.yaml'
     message:
@@ -35,23 +35,23 @@ rule demux_ubam:
 
 rule demux_fastq:
     input:
-        reads=lambda wildcards: fastq_dict[wildcards.movie],
+        reads=movie,
         barcodes=config["barcodes"],
         biosamples=config["biosamples"],
     output:
-        expand( f'batches/{batch}/demux' + '{{movie}}/demultiplex.{barcode}.fastq', barcode=barcode2sample.keys() ),
-        f'batches/{batch}/demux/{{movie}}/demultiplex.lima.report',
+        expand( f'batches/{batch}/demux/demultiplex.{{barcode}}.fastq', barcode=barcode2sample.keys() ),
+        f'batches/{batch}/demux/demultiplex.lima.report',
     log:
-        f"batches/{batch}/logs/lima/demux/{{movie}}.log",
+        f"batches/{batch}/logs/lima/demux.log",
     params:
-        odir=f'batches/{batch}/demux/{{movie}}',
+        odir=f'batches/{batch}/demux/',
         #preset='hifi-symmetric',
         filters='--min-score 40 --min-end-score 40 --min-ref-span 0.75 --same --ignore-missing-adapters',
         loglevel='INFO',
     threads:
         24
     benchmark:
-        f"batches/{batch}/benchmarks/{{movie}}.demux.fastq.tsv",
+        f"batches/{batch}/benchmarks/lima/demux.tsv",
     conda:
         'envs/lima.yaml'
     message:

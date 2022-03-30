@@ -4,27 +4,64 @@ localrules:
     consolidate_coverage_data,
     count_issue_element,
     get_coverage_fraction,
+    create_exons_bed,
+    copy_beds,
 
+allBeds = ['targets','probes','exons']
+
+rule create_exons_bed:
+    input:
+        ensmbl=config['ref']["exons"],
+        targets=config['targets'],
+    output:
+        temp(f'batches/{batch}/beds/exons.bed'),
+    conda:
+        "envs/samtools.yaml"
+    message:
+        "Generate bed of exons within target regions for qc"
+    log:
+        f'batches/{batch}/logs/bedtools/exon.bed.log'
+    shell:
+        '''
+        bedtools intersect -u -a {input.ensmbl} -b {input.targets} > {output} 
+        '''
+
+rule copy_beds:
+    input:
+        lambda wildcards: config[wildcards.elem],
+    output:
+        temp(f'batches/{batch}/beds/{{elem}}.bed'),
+    message:
+        "Copy beds for pipeline naming consistency"
+    log:
+        f'batches/{batch}/logs/bedtools/{{elem}}.bed.log'
+    shell:
+        '''
+        cp {input} {output}
+        '''
 
 rule count_ontarget:
     input:
-        bed=lambda wildcards: config['beds'][wildcards.bedfile],
+        bed=lambda wildcards: f'batches/{batch}/beds/{wildcards.bedfile}.bed',
         bam=f"batches/{batch}/{{sample}}/aligned/{{sample}}.{ref}.bam",
     output:
-        by_elem=(f'batches/{batch}/{{sample}}/counts/readcount_{{bedfile}}.bed'),
-        by_read=(f'batches/{batch}/{{sample}}/counts/{{bedfile}}_per_read.csv'),
+        filtered=temp(f'batches/{batch}/{{sample}}/counts/readcount_{{bedfile}}.bam'),
+        by_elem=temp(f'batches/{batch}/{{sample}}/counts/readcount_{{bedfile}}.bed'),
+        by_read=temp(f'batches/{batch}/{{sample}}/counts/{{bedfile}}_per_read.csv'),
     params:
         elem='{bedfile}',
+        filter=3328,  #not prim,not supp, not dup
     conda:
         "envs/samtools.yaml"
     message:
         "Counting intersections of {wildcards.bedfile} with {input.bam}"
     shell:
         '''
+        samtools view -hbF {params.filter} {input.bam} > {output.filtered}
         #by element count of reads
-        bedtools intersect -a {input.bed} -b <(samtools view -hbF 0x900 {input.bam}) -c > {output.by_elem}
+        bedtools intersect -a {input.bed} -b {output.filtered} -c > {output.by_elem}
         #by read count of elements
-        bedtools intersect -a <(samtools view -hbF 0x900 {input.bam}) -b {input.bed} -bed -c \
+        bedtools intersect -a {output.filtered} -b {input.bed} -bed -c \
         | awk -v elem={params.elem} \
               'BEGIN {{ OFS="," ; print "readname,chr,start,stop,"elem }} \
                {{ print $4,$1,$2,$3,$NF }}' \
@@ -33,21 +70,22 @@ rule count_ontarget:
 
 rule get_coverage:
     input:
-        bed=lambda wildcards: config['beds'][wildcards.bedfile],
+        bed=lambda wildcards: f'batches/{batch}/beds/{wildcards.bedfile}.bed',
         bam=f"batches/{batch}/{{sample}}/aligned/{{sample}}.{ref}.bam",
     output:
-        ontarget=(f'batches/{batch}/{{sample}}/coverage/{{bedfile}}_ontarget.bam'),
+        ontarget=temp(f'batches/{batch}/{{sample}}/coverage/{{bedfile}}_ontarget.bam'),
         bg=f'batches/{batch}/{{sample}}/coverage/{{bedfile}}_coverage.bedgraph',
         cov=f'batches/{batch}/{{sample}}/coverage/{{bedfile}}_base_coverage.csv',
     params:
-        sample='{sample}'
+        sample='{sample}',
+        filter=3328,
     conda:
         "envs/samtools.yaml"
     message:
         "Getting coverage of {input.bed} from {input.bam}"
     shell:
         '''
-        bedtools intersect -a {input.bam} -b {input.bed} > {output.ontarget}
+        bedtools intersect -a <(samtools view -hbF {params.filter} {input.bam}) -b {input.bed} > {output.ontarget}
         bedtools genomecov -bga -ibam {output.ontarget} > {output.bg}
         bedtools intersect -a {output.bg} -b {input.bed} -wb \
         | awk -v s={params.sample} \
@@ -109,14 +147,16 @@ rule get_read_metrics:
     input:
         bam=f"batches/{batch}/{{sample}}/aligned/{{sample}}.{ref}.bam",
     output:
-        stats=(f'batches/{batch}/{{sample}}/read_metrics/reads.csv'),
+        stats=temp(f'batches/{batch}/{{sample}}/read_metrics/reads.csv'),
+    params:
+        filter=3328,
     conda:
         "envs/samtools.yaml",
     message:
         "Getting samtools target read metrics from {input.bam}"
     shell:
         '''
-        samtools view -F 0x900 {input.bam} \
+        samtools view -F {params.filter} {input.bam} \
         | awk 'BEGIN {{ OFS="," ; print "readname,length,qual,ismapped,duplicates,softclip" }} \
                {{ if( match( $0, /ds:i:[0-9]/ ) ) {{ split( substr( $0, RSTART, RLENGTH ),d,":"); dup=d[3] }} \
                   else                            {{ dup=0 }} \
@@ -135,27 +175,29 @@ rule get_read_metrics:
 
 rule get_read_target_metrics:
     input:
-        bed=config['beds']['targets'],
+        bed=config['targets'],
         bam=f"batches/{batch}/{{sample}}/aligned/{{sample}}.{ref}.bam",
     output:
-        target=(f'batches/{batch}/{{sample}}/read_metrics/read_target.csv'),
+        target=temp(f'batches/{batch}/{{sample}}/read_metrics/read_target.csv'),
+    params:
+        filter=3328,
     conda:
         "envs/samtools.yaml",
     message:
         "Getting target read metrics from {input.bam}"
     shell:
         ''' 
-        bedtools intersect -a <(samtools view -hbF 0x900 {input.bam}) -b {input.bed} -bed -loj \
+        bedtools intersect -a <(samtools view -hbF {params.filter} {input.bam}) -b {input.bed} -bed -loj \
         | awk 'BEGIN {{ print "readname,target" }} \
                {{ print $4","$NF }}' \
         | ( sed -u 1q; sort -t, -u -k1,1 ) > {output.target}
         ''' 
 
 rule get_duplicate_lengths:
-    input: 
-        lambda wildcards: f"batches/{batch}/{wildcards.sample}/dedup/duplicates.{sample2barcode[wildcards.sample]}.bam",
+    input:
+        f"batches/{batch}/{{sample}}/aligned/{{sample}}.{ref}.bam",
     output:
-        f'batches/{batch}/{{sample}}/read_metrics/duplicate_lengths.csv',
+        temp(f'batches/{batch}/{{sample}}/read_metrics/duplicate_lengths.csv'),
     params:
         sample='{sample}'
     message:
@@ -164,7 +206,7 @@ rule get_duplicate_lengths:
         "envs/samtools.yaml",
     shell:
         '''
-        samtools view {input} \
+        samtools view -f 1024 {input} \
         | awk -v s={params.sample} '{{print s","length($10)",Duplicates"}}' \
         > {output}
         '''
@@ -182,17 +224,19 @@ rule merge_duplengths:
 
 rule endmost_probe:
     input:
-        bed=config['beds']['probes'],
+        bed=config['probes'],
         bam=f"batches/{batch}/{{sample}}/aligned/{{sample}}.{ref}.bam",
     output:
-        (f'batches/{batch}/{{sample}}/read_metrics/endmost_probe.csv')
+        temp(f'batches/{batch}/{{sample}}/read_metrics/endmost_probe.csv')
+    params:
+        filter=3328
     conda:
         "envs/samtools.yaml"
     message:
         "Finding endmost probe for {input.bam}"
     shell:
         '''
-        bedtools intersect -a <(samtools view -hbF 0x900 {input.bam}) -b {input.bed} -bed \
+        bedtools intersect -a <(samtools view -hbF {params.filter} {input.bam}) -b {input.bed} -bed \
         | awk 'function abs(v) {{return v < 0 ? -v : v}} \
                BEGIN {{ OFS=","; print "readname,probe2end,probeStart,probeStop" }} \
               {{ m=1e9; \
@@ -289,7 +333,7 @@ rule count_issue_elements:
 
 rule gc_content:
     input:
-        bed=lambda wildcards: config['beds'][wildcards.bedfile],
+        bed=lambda wildcards: f'batches/{batch}/beds/{wildcards.bedfile}.bed',
         ref=config["ref"]["fasta"],
     output:
         f'batches/{batch}/stats/{{bedfile}}_frac_gc.csv',
@@ -306,7 +350,7 @@ rule gc_content:
 rule plot_read_metrics:
     input:
         csv=f'batches/{batch}/{{sample}}/read_metrics/read_data.csv',
-        bed=config['beds']['targets'],
+        bed=config['targets'],
     output:
         [f'batches/{batch}/{{sample}}/read_metrics/{p}' 
           for p in 
@@ -363,7 +407,7 @@ rule plot_multi_coverage:
 rule plot_multi_read:
     input:
         csv=f'batches/{batch}/stats/all_read_data.csv',
-        bed=config['beds']['targets'],
+        bed=config['targets'],
     output:
         [
           f'batches/{batch}/stats/{p}' 
@@ -388,10 +432,10 @@ rule plot_multi_read:
 rule plot_read_categories:
     input:
         readCsv=f'batches/{batch}/stats/all_read_data.csv',
-        lima=f'batches/{batch}/demux/{{movie}}/demultiplex.lima.report',
+        lima=f'batches/{batch}/demux/demultiplex.lima.report',
         dups=f'batches/{batch}/stats/all_duplicate_lengths.csv',
     output:
-        f'batches/{batch}/stats/read_categories_{{movie}}.png',
+        f'batches/{batch}/stats/read_categories.png',
     params:
         script=f'{config["scripts"]}/plot_read_cats.py',
     conda:
@@ -407,7 +451,7 @@ targets.extend(
     [
         f'batches/{batch}/{sample}/counts/readcount_{bedfile}.bed'
         for sample in sample2barcode.keys()
-        for bedfile in config['beds'].keys()
+        for bedfile in allBeds
     ]
 )
 
@@ -415,7 +459,7 @@ targets.extend(
     [
         f'batches/{batch}/{sample}/counts/{bedfile}_per_read.csv'
         for sample in sample2barcode.keys()
-        for bedfile in config['beds'].keys()
+        for bedfile in allBeds
     ]
 )
 
@@ -436,7 +480,7 @@ targets.extend(
 targets.extend(
     [
         f'batches/{batch}/stats/{bedfile}_frac_gc.csv'
-        for bedfile in config['beds'].keys()
+        for bedfile in allBeds
     ]
 )
 
@@ -465,7 +509,7 @@ targets.extend(
     [
         f'batches/{batch}/stats/{status}/{elem}.csv'
         for status in ['dropped','lowcov']
-        for elem in config['beds'].keys()
+        for elem in allBeds
     ]
 )
 
@@ -500,9 +544,6 @@ targets.extend(
     ]
 )
 
-targets.extend(
-    [
-        f'batches/{batch}/stats/read_categories_{movie}.png'
-        for movie in movies
-    ]
+targets.append(
+        f'batches/{batch}/stats/read_categories.png'
 )
