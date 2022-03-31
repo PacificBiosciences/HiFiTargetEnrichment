@@ -12,7 +12,7 @@ rule markdup_ubam:
     threads:
         16
     benchmark:
-        f"batches/{batch}/benchmarks/{{sample}}.{{barcode}}.dedup.bam.tsv"
+        f"batches/{batch}/benchmarks/pbmarkdup/{{sample}}.{{barcode}}.bam.tsv"
     conda:
         'envs/pbmarkdup.yaml'
     message:
@@ -40,7 +40,7 @@ rule markdup_fastq:
     threads:
         16
     benchmark:
-        f"batches/{batch}/benchmarks/{{sample}}.{{barcode}}.dedup.fastq..tsv"
+        f"batches/{batch}/benchmarks/pbmarkdup/{{sample}}.{{barcode}}.fastq.tsv"
     conda:
         'envs/pbmarkdup.yaml'
     message:
@@ -61,6 +61,8 @@ rule downsample_bam:
         f"batches/{batch}/{{sample}}/downsampled/markdups.bam",
     log:
         f"batches/{batch}/logs/pbcoretools/bamsieve/downsample.{{sample}}.log",
+    benchmark:
+        f"batches/{batch}/benchmarks/pbtools/downsample.{{sample}}.bam.tsv"
     params:
         maxreads=int(config['downsample']),
         seed=42,
@@ -84,6 +86,8 @@ rule downsample_fastq:
         temp(f"batches/{batch}/{{sample}}/downsampled/markdups.fastq"),
     log:
         f"batches/{batch}/logs/pbcoretools/bamsieve/downsample.{{sample}}.log",
+    benchmark:
+        f"batches/{batch}/benchmarks/seqtk/downsample.{{sample}}.fastq.tsv"
     params:
         maxreads=int(config['downsample']),
         seed=42,
