@@ -6,17 +6,17 @@ import sys
 allDemuxReads = pd.read_csv( sys.argv[1] )
 limaReport    = pd.read_csv( sys.argv[2], sep='\t', usecols=['ReadLengths','PassedFilters'] )
 dups          = pd.read_csv( sys.argv[3], usecols=['length','category'] )
-outfile       = sys.argv[4]
+outdir        = sys.argv[4]
 
 #load data
 onTarget  = allDemuxReads.query('target != "."')\
-                         .assign(category='OnTarget Unique')[['category','length']]
+                         .assign(category='OnTarget Unique')[['sample','category','length']]
 
 offTarget = allDemuxReads.query('target == "." and ismapped==1')\
-                         .assign(category='OffTarget Unique')[['category','length']]
+                         .assign(category='OffTarget Unique')[['sample','category','length']]
 
 unmapped  = allDemuxReads.query('ismapped==0')\
-                         .assign(category='Unmapped Unique')[['category','length']]
+                         .assign(category='Unmapped Unique')[['sample','category','length']]
 
 noDemux   = limaReport.query('PassedFilters==0')\
                       .assign(category='Failed Demux')\
@@ -58,4 +58,13 @@ ax0.set_ylabel('Total Fraction')
 
 plt.tight_layout()
 
-f.savefig(outfile,dpi=400)
+f.savefig(f'{outdir}/read_categories.png',dpi=400)
+
+# write readlength legnth stats table
+allData.dropna()\
+       .groupby(['category','sample'])\
+       .length.describe().dropna().astype(int)\
+       .to_csv(f'{outdir}/read_length_by_sample.csv')
+
+
+

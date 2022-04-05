@@ -6,16 +6,17 @@ import sys
 
 DPI=400
 
-readCsv   = sys.argv[1]
-targetBed = sys.argv[2]
-outDir    = sys.argv[3]
+readCsv      = sys.argv[1]
+targetBed    = sys.argv[2]
+targetBuffer = int(sys.argv[3])
+outDir       = sys.argv[4]
 
 targets = pd.read_csv(targetBed,
                       sep='\t',
                       names=['chr','start','stop','target'])\
             .set_index('target')
 #Set length of target region
-targets['tlength'] = targets.eval('stop - start')
+targets['tlength'] = targets.eval('stop - start + 2 * @targetBuffer')
 
 data = pd.read_csv(readCsv)
 #replace "." with "off-target"
@@ -96,10 +97,10 @@ plt.clf()
 ####
 print('writing readlength by target')
 pdata = data
-         
+wrap  = int( len(order) ** 0.5 + 1 )         
 g = sns.FacetGrid(data=pdata,
                   hue='sample',
-                  col='target',col_wrap=7,
+                  col='target',col_wrap=wrap,
                   col_order=order,sharey=False)
 order = sorted(pdata.target.unique())
 

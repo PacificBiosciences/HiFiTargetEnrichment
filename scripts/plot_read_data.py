@@ -4,11 +4,12 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import sys
 
-DPI=400
+DPI=200
 
-readCsv   = sys.argv[1]
-targetBed = sys.argv[2]
-outDir    = sys.argv[3]
+readCsv      = sys.argv[1]
+targetBed    = sys.argv[2]
+targetBuffer = int(sys.argv[3])
+outDir       = sys.argv[3]
 
 
 targets = pd.read_csv(targetBed,
@@ -16,7 +17,7 @@ targets = pd.read_csv(targetBed,
                       names=['chr','start','stop','target'])\
             .set_index('target')
 #Set length of target region
-targets['tlength'] = targets.eval('stop - start')
+targets['tlength'] = targets.eval('stop - start + 2 * @targetBuffer')
 
 data = pd.read_csv(readCsv)
 #replace "." with "off-target"

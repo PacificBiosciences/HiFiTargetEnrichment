@@ -1,3 +1,4 @@
+
 rule create_dict:
     input:
         config['ref']['fasta'],
@@ -30,14 +31,14 @@ rule bed_to_interval_list:
 
 rule picard_collect_hs_metrics:
     input:
-        bam=f"batches/{batch}/{{sample}}/whatshap/{{sample}}.{ref}.deepvariant.haplotagged.bam",
+        bam=f"batches/{batch}/{{sample}}/downsampled_{{maxreads}}/whatshap/{{sample}}.{ref}.deepvariant.haplotagged.bam",
         reference=config["ref"]["fasta"],
         # Baits and targets should be given as interval lists. These can
         # be generated from bed files using picard BedToIntervalList.
         bait_intervals=f"batches/{batch}/picard/probes.interval_list",
         target_intervals=f"batches/{batch}/picard/targets.interval_list",
     output:
-        f"batches/{batch}/{{sample}}/hs_metrics/hs_metrics.txt",
+        f"batches/{batch}/{{sample}}/downsampled_{{maxreads}}/hs_metrics/hs_metrics.txt",
     params:
         # Optional extra arguments. Here we reduce sample size
         # to reduce the runtime in our unit test.
@@ -49,15 +50,15 @@ rule picard_collect_hs_metrics:
     resources:
         mem_mb=1024,
     log:
-        f"batches/{batch}/logs/picard/collect_hs_metrics/{{sample}}.log",
+        f"batches/{batch}/logs/picard/collect_hs_metrics/{{sample}}.{{maxreads}}.log",
     wrapper:
         "v1.3.1/bio/picard/collecthsmetrics"
 
 rule consolidate_hsmetrics:
     input:
-        expand( f"batches/{batch}/{{sample}}/hs_metrics/hs_metrics.txt",sample=sample2barcode.keys() ),
+        expand( f'batches/{batch}/' + '{sample}/downsampled_{{maxreads}}/hs_metrics/hs_metrics.txt', sample=sample2barcode.keys() ),
     output:
-        f"batches/{batch}/stats/hs_metrics_consolidated.tsv",
+        f"batches/{batch}/stats/downsampled_{{maxreads}}/hs_metrics_consolidated.tsv",
     shell:
         '''
         awk '/METRICS/ {{getline; print;
@@ -65,11 +66,58 @@ rule consolidate_hsmetrics:
         | awk 'NR==1 || !/^BAIT_SET/' > {output}
         '''
 
+quickviewColumns = [
+                    'SAMPLE',
+                    'PCT_OFF_BAIT',
+                    'MEAN_BAIT_COVERAGE',
+                    'MEAN_TARGET_COVERAGE',
+                    'FOLD_ENRICHMENT',
+                    'ZERO_CVG_TARGETS_PCT',
+                    'PCT_EXC_DUPE',
+                    'FOLD_80_BASE_PENALTY',
+                    'PCT_TARGET_BASES_20X',
+                    'PCT_TARGET_BASES_30X',
+                    'AT_DROPOUT',
+                    'GC_DROPOUT'
+                   ] 
+
+
+rule hsmetrics_quickview:
+    input:
+        f"batches/{batch}/stats/downsampled_{{maxreads}}/hs_metrics_consolidated.tsv",
+    output:
+        f"batches/{batch}/stats/downsampled_{{maxreads}}/hs_metrics_consolidated_quickview.tsv",
+    run:
+        import csv
+        from operator import itemgetter
+        quickgetter = itemgetter(*quickviewColumns)
+        with open( input[0], newline='' ) as hsmetrics,\
+             open( output[0], 'w', newline='' ) as quickview:
+            reader = csv.DictReader( map( lambda s: s.replace('\t',' '), hsmetrics), dialect='unix', delimiter=' ')
+            writer = csv.DictWriter( quickview, quickviewColumns, dialect='unix', delimiter='\t', quoting=0 )
+            writer.writeheader()
+            for row in reader:
+                writer.writerow( dict( zip( quickviewColumns, quickgetter(row) ) ) )
+                       
+
 targets.extend(
     [
-        f"batches/{batch}/{sample}/hs_metrics/hs_metrics.txt"
+        f"batches/{batch}/{sample}/downsampled_{maxreads}/hs_metrics/hs_metrics.txt"
         for sample in sample2barcode.keys()
+        for maxreads in config['downsample'] + ['all']
     ]
 )
 
-targets.append( f"batches/{batch}/stats/hs_metrics_consolidated.tsv" )
+targets.extend(
+    [
+         f"batches/{batch}/stats/downsampled_{maxreads}/hs_metrics_consolidated.tsv"
+        for maxreads in config['downsample'] + ['all']
+    ]
+)
+
+targets.extend(
+    [
+         f"batches/{batch}/stats/downsampled_{maxreads}/hs_metrics_consolidated_quickview.tsv"
+        for maxreads in config['downsample'] + ['all']
+    ]
+)

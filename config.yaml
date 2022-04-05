@@ -35,4 +35,4 @@ picard :
   near_distance : 10000
   sample_size   : 1000
 
-downsample : 100000
+downsample : [100000,200000,500000]

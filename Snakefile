@@ -46,7 +46,7 @@ include: "rules/hsmetrics.smk"
 # DV
 targets.extend(
     [
-        f"batches/{batch}/{sample}/deepvariant/{sample}.{ref}.deepvariant.{suffix}"
+        f"batches/{batch}/{sample}/downsampled_{maxreads}/deepvariant/{sample}.{ref}.deepvariant.{suffix}"
         for suffix in [
             "vcf.gz",
             "vcf.gz.tbi",
@@ -56,12 +56,13 @@ targets.extend(
             "vcf.stats.txt",
         ]
         for sample in sample2barcode.keys()
+        for maxreads in config['downsample'] + ['all']
     ]
 )
 # WH
 targets.extend(
     [
-        f"batches/{batch}/{sample}/whatshap/{sample}.{ref}.deepvariant.{suffix}"
+        f"batches/{batch}/{sample}/downsampled_{maxreads}/whatshap/{sample}.{ref}.deepvariant.{suffix}"
         for suffix in [
             "phased.vcf.gz",
             "phased.vcf.gz.tbi",
@@ -72,31 +73,35 @@ targets.extend(
             "haplotagged.bam.bai",
         ]
         for sample in sample2barcode.keys()
+        for maxreads in config['downsample'] + ['all']
     ]
 )
 #SV
 targets.extend(
     [
-        f"batches/{batch}/{sample}/pbsv/{sample}.{ref}.pbsv.vcf"
+        f"batches/{batch}/{sample}/downsampled_{maxreads}/pbsv/{sample}.{ref}.pbsv.vcf"
         for sample in sample2barcode.keys()
+        for maxreads in config['downsample'] + ['all']
     ]
 )
 
 # gVCF/cohort
-targets.extend(
-    [
-     f"batches/{batch}/whatshap_cohort/{batch}.{ref}.deepvariant.glnexus.phased.vcf.gz",
-     f"batches/{batch}/whatshap_cohort/{batch}.{ref}.deepvariant.glnexus.phased.gtf",
-     f"batches/{batch}/whatshap_cohort/{batch}.{ref}.deepvariant.glnexus.phased.tsv",
-     f"batches/{batch}/whatshap_cohort/{batch}.{ref}.deepvariant.glnexus.phased.blocklist"
-    ]
-)
+for maxreads in config['downsample'] + ['all']:
+    targets.extend(
+        [
+         f"batches/{batch}/whatshap_cohort/downsampled_{maxreads}/{batch}.{ref}.deepvariant.glnexus.phased.vcf.gz",
+         f"batches/{batch}/whatshap_cohort/downsampled_{maxreads}/{batch}.{ref}.deepvariant.glnexus.phased.gtf",
+         f"batches/{batch}/whatshap_cohort/downsampled_{maxreads}/{batch}.{ref}.deepvariant.glnexus.phased.tsv",
+         f"batches/{batch}/whatshap_cohort/downsampled_{maxreads}/{batch}.{ref}.deepvariant.glnexus.phased.blocklist"
+        ]
+    )
 
 # HiFiasm
 targets.extend(
     [
-        f"batches/{batch}/{sample}/hifiasm/{sample}.asm.{ref}.htsbox.vcf.stats.txt"
+        f"batches/{batch}/{sample}/downsampled_{maxreads}/hifiasm/{sample}.asm.{ref}.htsbox.vcf.stats.txt"
         for sample in sample2barcode.keys()
+        for maxreads in config['downsample'] + ['all']
     ]
 )
 

@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import sys
 
-DPI=400
+DPI=200
 
 covCsv = sys.argv[1]
 odir   = sys.argv[2]
@@ -12,9 +12,12 @@ odir   = sys.argv[2]
 coverage = pd.read_csv(covCsv)
 
 order = sorted(coverage.target.unique())
+maxCols = int( len(order) ** 0.5 ) + 1
+
+plt.figure(figsize=(40,40))
 
 g = sns.FacetGrid(data=coverage,sharex=False,
-                  col='target',col_wrap=7,col_order=order,
+                  col='target',col_wrap=maxCols,col_order=order,
                   hue='target')
 
 g.map(plt.plot, 'start','coverage')

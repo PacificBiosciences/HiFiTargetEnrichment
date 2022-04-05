@@ -3,15 +3,15 @@ localrules: bcftools_concat_pbsv_vcf
 
 rule pbsv_discover:
     input:
-        bam=f"batches/{batch}/{{sample}}/aligned/{{sample}}.{ref}.bam",
-        bai=f"batches/{batch}/{{sample}}/aligned/{{sample}}.{ref}.bam.bai",
+        bam=f"batches/{batch}/{{sample}}/downsampled_{{maxreads}}/aligned/{{sample}}.{ref}.bam",
+        bai=f"batches/{batch}/{{sample}}/downsampled_{{maxreads}}/aligned/{{sample}}.{ref}.bam.bai",
         tr_bed = config['ref']['tr_bed'],
     output: 
-        f"batches/{batch}/{{sample}}/pbsv/svsig/{movie}.{ref}.svsig.gz",
+        f"batches/{batch}/{{sample}}/downsampled_{{maxreads}}/pbsv/svsig/{movie}.{ref}.svsig.gz",
     log: 
-        f"batches/{batch}/logs/pbsv/discover/{{sample}}.{movie}.{ref}.log"
+        f"batches/{batch}/logs/pbsv/discover/{{sample}}.{{maxreads}}.{ref}.log"
     benchmark: 
-        f"batches/{batch}/benchmarks/pbsv/discover/{{sample}}.{movie}.{ref}.tsv"
+        f"batches/{batch}/benchmarks/pbsv/discover/{{sample}}.{{maxreads}}.{ref}.tsv"
     params:
         extra = "--hifi",
         loglevel = "INFO",
@@ -31,14 +31,14 @@ rule pbsv_discover:
 
 rule pbsv_call:
     input:
-        svsigs=f"batches/{batch}/{{sample}}/pbsv/svsig/{movie}.{ref}.svsig.gz",
+        svsigs=f"batches/{batch}/{{sample}}/downsampled_{{maxreads}}/pbsv/svsig/{movie}.{ref}.svsig.gz",
         reference = config['ref']['fasta'],
     output: 
-        f"batches/{batch}/{{sample}}/pbsv/{{sample}}.{ref}.pbsv.vcf",
+        f"batches/{batch}/{{sample}}/downsampled_{{maxreads}}/pbsv/{{sample}}.{ref}.pbsv.vcf",
     log: 
-        f"batches/{batch}/logs/pbsv/call/{{sample}}.{ref}.log",
+        f"batches/{batch}/logs/pbsv/call/{{sample}}.{{maxreads}}.{ref}.log",
     benchmark: 
-        f"batches/{batch}/benchmarks/pbsv/call/{{sample}}.{ref}.tsv",
+        f"batches/{batch}/benchmarks/pbsv/call/{{sample}}.{{maxreads}}.{ref}.tsv",
     params:
         extra = "--hifi -m 20",
         loglevel = "INFO"

@@ -3,13 +3,13 @@ ruleorder: samtools_fasta > seqtk_fastq_to_fasta
 
 rule samtools_fasta:
     input:
-        lambda wildcards: f'batches/{batch}/{{sample}}/downsampled/markdups.bam',
+        lambda wildcards: f'batches/{batch}/{{sample}}/downsampled_{{maxreads}}/markdup/markdups.bam',
     output: 
-        f"batches/{batch}/{{sample}}/fasta/{{sample}}.fasta",
+        f"batches/{batch}/{{sample}}/downsampled_{{maxreads}}/fasta/{{sample}}.fasta",
     params:
         filter=3328,
     log: 
-        f"batches/{batch}/logs/samtools/fasta/{{sample}}.log"
+        f"batches/{batch}/logs/samtools/fasta/{{sample}}.{{maxreads}}.log"
     threads: 4
     conda: 
         "envs/samtools.yaml"
@@ -21,11 +21,11 @@ rule samtools_fasta:
 
 rule seqtk_fastq_to_fasta:
     input:
-        lambda wildcards: f'batches/{batch}/{{sample}}/downsampled/markdups.fastq',
+        lambda wildcards: f'batches/{batch}/{{sample}}/downsampled_{{maxreads}}/markdup/markdups.fastq',
     output: 
-        f"batches/{batch}/{{sample}}/fasta/{{sample}}.fasta"
+        f"batches/{batch}/{{sample}}/downsampled_{{maxreads}}/fasta/{{sample}}.fasta"
     log: 
-        f"batches/{batch}/logs/seqtk/seq/{{sample}}.log"
+        f"batches/{batch}/logs/seqtk/seq/{{sample}}.{{maxreads}}.log"
     conda: 
         "envs/seqtk.yaml"
     message: 
@@ -36,28 +36,28 @@ rule seqtk_fastq_to_fasta:
 
 rule hifiasm_assemble:
     input: 
-        f"batches/{batch}/{{sample}}/fasta/{{sample}}.fasta",
+        f"batches/{batch}/{{sample}}/downsampled_{{maxreads}}/fasta/{{sample}}.fasta",
     output:
-        f"batches/{batch}/{{sample}}/hifiasm/{{sample}}.asm.bp.hap1.p_ctg.gfa",
-        f"batches/{batch}/{{sample}}/hifiasm/{{sample}}.asm.bp.hap1.p_ctg.lowQ.bed",
-        f"batches/{batch}/{{sample}}/hifiasm/{{sample}}.asm.bp.hap1.p_ctg.noseq.gfa",
-        f"batches/{batch}/{{sample}}/hifiasm/{{sample}}.asm.bp.hap2.p_ctg.gfa",
-        f"batches/{batch}/{{sample}}/hifiasm/{{sample}}.asm.bp.hap2.p_ctg.lowQ.bed",
-        f"batches/{batch}/{{sample}}/hifiasm/{{sample}}.asm.bp.hap2.p_ctg.noseq.gfa",
-        f"batches/{batch}/{{sample}}/hifiasm/{{sample}}.asm.bp.p_ctg.gfa",
-        f"batches/{batch}/{{sample}}/hifiasm/{{sample}}.asm.bp.p_utg.gfa",
-        f"batches/{batch}/{{sample}}/hifiasm/{{sample}}.asm.bp.r_utg.gfa",
-        #f"batches/{batch}/{{sample}}/hifiasm/{{sample}}.asm.ec.bin",
-        #f"batches/{batch}/{{sample}}/hifiasm/{{sample}}.asm.ovlp.reverse.bin",
-        #f"batches/{batch}/{{sample}}/hifiasm/{{sample}}.asm.ovlp.source.bin"
+        f"batches/{batch}/{{sample}}/downsampled_{{maxreads}}/hifiasm/{{sample}}.asm.bp.hap1.p_ctg.gfa",
+        f"batches/{batch}/{{sample}}/downsampled_{{maxreads}}/hifiasm/{{sample}}.asm.bp.hap1.p_ctg.lowQ.bed",
+        f"batches/{batch}/{{sample}}/downsampled_{{maxreads}}/hifiasm/{{sample}}.asm.bp.hap1.p_ctg.noseq.gfa",
+        f"batches/{batch}/{{sample}}/downsampled_{{maxreads}}/hifiasm/{{sample}}.asm.bp.hap2.p_ctg.gfa",
+        f"batches/{batch}/{{sample}}/downsampled_{{maxreads}}/hifiasm/{{sample}}.asm.bp.hap2.p_ctg.lowQ.bed",
+        f"batches/{batch}/{{sample}}/downsampled_{{maxreads}}/hifiasm/{{sample}}.asm.bp.hap2.p_ctg.noseq.gfa",
+        f"batches/{batch}/{{sample}}/downsampled_{{maxreads}}/hifiasm/{{sample}}.asm.bp.p_ctg.gfa",
+        f"batches/{batch}/{{sample}}/downsampled_{{maxreads}}/hifiasm/{{sample}}.asm.bp.p_utg.gfa",
+        f"batches/{batch}/{{sample}}/downsampled_{{maxreads}}/hifiasm/{{sample}}.asm.bp.r_utg.gfa",
+        #f"batches/{batch}/{{sample}}/downsampled_{{maxreads}}/hifiasm/{{sample}}.asm.ec.bin",
+        #f"batches/{batch}/{{sample}}/downsampled_{{maxreads}}/hifiasm/{{sample}}.asm.ovlp.reverse.bin",
+        #f"batches/{batch}/{{sample}}/downsampled_{{maxreads}}/hifiasm/{{sample}}.asm.ovlp.source.bin"
     log: 
-        f"batches/{batch}/logs/hifiasm/{{sample}}.log"
+        f"batches/{batch}/logs/hifiasm/{{sample}}.{{maxreads}}.log"
     benchmark: 
-        f"batches/{batch}/benchmarks/{{sample}}.hifiasm.tsv"
+        f"batches/{batch}/benchmarks/{{sample}}.{{maxreads}}.hifiasm.tsv"
     conda: 
         "envs/hifiasm.yaml"
     params: 
-        prefix = f"batches/{batch}/{{sample}}/hifiasm/{{sample}}.asm"
+        prefix = f"batches/{batch}/{{sample}}/downsampled_{{maxreads}}/hifiasm/{{sample}}.asm"
     threads: 24
     message: 
         "Assembling sample {wildcards.sample} from {input}"
@@ -67,13 +67,13 @@ rule hifiasm_assemble:
 
 rule gfa2fa:
     input: 
-        f"batches/{batch}/{{sample}}/hifiasm/{{sample}}.asm.bp.{{infix}}.gfa"
+        f"batches/{batch}/{{sample}}/downsampled_{{maxreads}}/hifiasm/{{sample}}.asm.bp.{{infix}}.gfa"
     output: 
-        f"batches/{batch}/{{sample}}/hifiasm/{{sample}}.asm.bp.{{infix}}.fasta"
+        f"batches/{batch}/{{sample}}/downsampled_{{maxreads}}/hifiasm/{{sample}}.asm.bp.{{infix}}.fasta"
     log: 
-        f"batches/{batch}/logs/gfa2fa/{{sample}}.asm.bp.{{infix}}.log"
+        f"batches/{batch}/logs/gfa2fa/{{sample}}.{{maxreads}}.asm.bp.{{infix}}.log"
     benchmark: 
-        f"batches/{batch}/benchmarks/gfa2fa/{{sample}}.asm.bp.{{infix}}.tsv"
+        f"batches/{batch}/benchmarks/gfa2fa/{{sample}}.{{maxreads}}.asm.bp.{{infix}}.tsv"
     conda: 
         "envs/gfatools.yaml"
     message: 
@@ -84,13 +84,13 @@ rule gfa2fa:
 
 rule bgzip_fasta:
     input: 
-        f"batches/{batch}/{{sample}}/hifiasm/{{sample}}.asm.bp.{{infix}}.fasta"
+        f"batches/{batch}/{{sample}}/downsampled_{{maxreads}}/hifiasm/{{sample}}.asm.bp.{{infix}}.fasta"
     output:
-         f"batches/{batch}/{{sample}}/hifiasm/{{sample}}.asm.bp.{{infix}}.fasta.gz"
+         f"batches/{batch}/{{sample}}/downsampled_{{maxreads}}/hifiasm/{{sample}}.asm.bp.{{infix}}.fasta.gz"
     log: 
-        f"batches/{batch}/logs/bgzip/{{sample}}.asm.bp.{{infix}}.log"
+        f"batches/{batch}/logs/bgzip/{{sample}}.{{maxreads}}.asm.bp.{{infix}}.log"
     benchmark: 
-        f"batches/{batch}/benchmarks/bgzip/{{sample}}.asm.bp.{{infix}}.tsv"
+        f"batches/{batch}/benchmarks/bgzip/{{sample}}.{{maxreads}}.asm.bp.{{infix}}.tsv"
     threads: 4
     conda: 
         "envs/htslib.yaml"
@@ -102,15 +102,15 @@ rule bgzip_fasta:
 
 rule asm_stats:
     input: 
-        f"batches/{batch}/{{sample}}/hifiasm/{{sample}}.asm.bp.{{infix}}.fasta.gz"
+        f"batches/{batch}/{{sample}}/downsampled_{{maxreads}}/hifiasm/{{sample}}.asm.bp.{{infix}}.fasta.gz"
     output: 
-        f"batches/{batch}/{{sample}}/hifiasm/{{sample}}.asm.bp.{{infix}}.fasta.stats.txt"
+        f"batches/{batch}/{{sample}}/downsampled_{{maxreads}}/hifiasm/{{sample}}.asm.bp.{{infix}}.fasta.stats.txt"
     params:
         faidx=config['ref']['index']
     log: 
-        f"batches/{batch}/logs/asm_stats/{{sample}}.asm.bp.{{infix}}.fasta.log"
+        f"batches/{batch}/logs/asm_stats/{{sample}}.{{maxreads}}.asm.bp.{{infix}}.fasta.log"
     benchmark: 
-        f"batches/{batch}/benchmarks/asm_stats/{{sample}}.asm.bp.{{infix}}.fasta.tsv"
+        f"batches/{batch}/benchmarks/asm_stats/{{sample}}.{{maxreads}}.asm.bp.{{infix}}.fasta.tsv"
     conda: 
         "envs/k8.yaml"
     message: 
@@ -125,15 +125,15 @@ rule align_hifiasm:
     input:
         target = config['ref']['fasta'],
         query = [
-                    f"batches/{batch}/{{sample}}/hifiasm/{{sample}}.asm.bp.{infix}.fasta.gz"
+                    f"batches/{batch}/{{sample}}/downsampled_{{maxreads}}/hifiasm/{{sample}}.asm.bp.{infix}.fasta.gz"
                     for infix in ["hap1.p_ctg", "hap2.p_ctg"]
                 ],
     output: 
-        f"batches/{batch}/{{sample}}/hifiasm/{{sample}}.asm.{ref}.bam"
+        f"batches/{batch}/{{sample}}/downsampled_{{maxreads}}/hifiasm/{{sample}}.asm.{ref}.bam"
     log: 
-        f"batches/{batch}/logs/align_hifiasm/{{sample}}.asm.{ref}.log"
+        f"batches/{batch}/logs/align_hifiasm/{{sample}}.{{maxreads}}.asm.{ref}.log"
     benchmark: 
-        f"batches/{batch}/benchmarks/align_hifiasm/{{sample}}.asm.{ref}.tsv"
+        f"batches/{batch}/benchmarks/align_hifiasm/{{sample}}.{{maxreads}}.asm.{ref}.tsv"
     params:
         max_chunk = 200000,
         minimap2_args = "-L --secondary=no --eqx -ax asm5",
@@ -160,11 +160,11 @@ rule align_hifiasm:
 
 rule samtools_index_bam:
     input:
-        f"batches/{batch}/{{sample}}/hifiasm/{{sample}}.asm.{ref}.bam"
+        f"batches/{batch}/{{sample}}/downsampled_{{maxreads}}/hifiasm/{{sample}}.asm.{ref}.bam"
     output:
-        f"batches/{batch}/{{sample}}/hifiasm/{{sample}}.asm.{ref}.bam.bai",
+        f"batches/{batch}/{{sample}}/downsampled_{{maxreads}}/hifiasm/{{sample}}.asm.{ref}.bam.bai",
     log:
-        f"batches/{batch}/logs/samtools/index/{{sample}}.asm.{ref}.bam.log"
+        f"batches/{batch}/logs/samtools/index/{{sample}}.{{maxreads}}.asm.{ref}.bam.log"
     threads: 4
     conda:
         "envs/samtools.yaml"
@@ -177,15 +177,15 @@ rule samtools_index_bam:
 
 rule htsbox:
     input:
-        bam = f"batches/{batch}/{{sample}}/hifiasm/{{sample}}.asm.{ref}.bam",
-        bai = f"batches/{batch}/{{sample}}/hifiasm/{{sample}}.asm.{ref}.bam.bai",
+        bam = f"batches/{batch}/{{sample}}/downsampled_{{maxreads}}/hifiasm/{{sample}}.asm.{ref}.bam",
+        bai = f"batches/{batch}/{{sample}}/downsampled_{{maxreads}}/hifiasm/{{sample}}.asm.{ref}.bam.bai",
         reference = config['ref']['fasta'],
     output: 
-        f"batches/{batch}/{{sample}}/hifiasm/{{sample}}.asm.{ref}.htsbox.vcf"
+        f"batches/{batch}/{{sample}}/downsampled_{{maxreads}}/hifiasm/{{sample}}.asm.{ref}.htsbox.vcf"
     log: 
-        f"batches/{batch}/logs/htsbox/{{sample}}.asm.log"
+        f"batches/{batch}/logs/htsbox/{{sample}}.{{maxreads}}.asm.log"
     benchmark: 
-        f"batches/{batch}/benchmarks/htsbox/{{sample}}.asm.tsv"
+        f"batches/{batch}/benchmarks/htsbox/{{sample}}.{{maxreads}}.asm.tsv"
     params: 
         '-q20'
     conda: 
@@ -199,11 +199,11 @@ rule htsbox:
 
 rule bgzip_vcf:
     input:
-        f"batches/{batch}/{{sample}}/hifiasm/{{sample}}.asm.{ref}.htsbox.vcf",
+        f"batches/{batch}/{{sample}}/downsampled_{{maxreads}}/hifiasm/{{sample}}.asm.{ref}.htsbox.vcf",
     output:
-        f"batches/{batch}/{{sample}}/hifiasm/{{sample}}.asm.{ref}.htsbox.vcf.gz",
+        f"batches/{batch}/{{sample}}/downsampled_{{maxreads}}/hifiasm/{{sample}}.asm.{ref}.htsbox.vcf.gz",
     log:
-        f"batches/{batch}/logs/bgzip/{{sample}}.asm.{ref}.htsbox.log",
+        f"batches/{batch}/logs/bgzip/{{sample}}.{{maxreads}}.asm.{ref}.htsbox.log",
     threads: 2
     conda:
         "envs/htslib.yaml"
@@ -215,15 +215,15 @@ rule bgzip_vcf:
 
 rule htsbox_bcftools_stats:
     input: 
-        f"batches/{batch}/{{sample}}/hifiasm/{{sample}}.asm.{ref}.htsbox.vcf.gz"
+        f"batches/{batch}/{{sample}}/downsampled_{{maxreads}}/hifiasm/{{sample}}.asm.{ref}.htsbox.vcf.gz"
     output: 
-        f"batches/{batch}/{{sample}}/hifiasm/{{sample}}.asm.{ref}.htsbox.vcf.stats.txt"
+        f"batches/{batch}/{{sample}}/downsampled_{{maxreads}}/hifiasm/{{sample}}.asm.{ref}.htsbox.vcf.stats.txt"
     log: 
-        f"batches/{batch}/logs/bcftools/stats/{{sample}}.asm.{ref}.htsbox.vcf.log"
+        f"batches/{batch}/logs/bcftools/stats/{{sample}}.{{maxreads}}.asm.{ref}.htsbox.vcf.log"
     benchmark: 
-        f"batches/{batch}/benchmarks/bcftools/stats/{{sample}}.asm.{ref}.htsbox.vcf.tsv"
+        f"batches/{batch}/benchmarks/bcftools/stats/{{sample}}.{{maxreads}}.asm.{ref}.htsbox.vcf.tsv"
     params: 
-        f"--fasta-ref {config['ref']['fasta']} -s batches/{batch}/{{sample}}/hifiasm/{{sample}}.asm.{ref}.bam"
+        f"--fasta-ref {config['ref']['fasta']} -s batches/{batch}/{{sample}}/downsampled_{{maxreads}}/hifiasm/{{sample}}.asm.{ref}.bam"
     threads: 4
     conda: 
         "envs/bcftools.yaml"
