@@ -1,0 +1,43 @@
+
+# General Configuration
+######################
+sample_directory: ""
+######################
+
+# Information about reference
+#############################
+reference: "/users/sedlazec/ccdg_tech/reference/GRCh38-2.1.0/genome.fa"
+bed_file: "/users/mmahmoud/home/projects/HiFi_panel/genes/2021_Gene_Pane_LR-GRCh38_challenging_mrg_genes_included_less_than_90percent_GIAB_v4_sorted.bed"
+exon_file: "/users/mmahmoud/home/projects/HiFi_panel/genes/2021_Gene_Pane_LR-GRCh38_challenging_mrg_genes_included_less_than_90percent_GIAB_v4_exones.bed"
+#############################
+
+# SNVs Configuration
+####################
+SNVs_dir_name: "SNVs"
+clair_threads: 5
+reads_technology: 'hifi'
+bed_region: "/users/mmahmoud/home/projects/HiFi_panel/genes/2021_Gene_Pane_LR-GRCh38_challenging_mrg_genes_included_less_than_90percent_GIAB_v4_stat.bed"
+####################
+
+# SVs Configuration
+####################
+sniffles_threads: 5
+####################
+
+# Bam Coverage
+###################
+mosdepth_threads: 5
+coverage_prefix: ""
+###################
+
+# SNVs Benchmark
+################
+genes_dir: "/users/mmahmoud/home/projects/HiFi_panel/scripts/snakefiles/genes"
+output_dir_name: "SNVs_benchamrk_dir"
+gold_vcf: "/users/mmahmoud/home/projects/HiFi_panel/scripts/snakefiles/SNVs_truthset/HG002_dipcall_original.SNV.decompose.vcf.gz"
+REF_38: "/users/sedlazec/ccdg_tech/reference/GRCh38-2.1.0/genome_mainchrs.sdf"
+SNVs_bench_threads: 5
+covmin: "covmin"
+covmin_value: 8
+cov0: "cov0"
+################
