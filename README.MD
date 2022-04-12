@@ -4,13 +4,14 @@
 1) demulltiplex HiFi reads with [lima](https://github.com/pacificbiosciences/barcoding/)
 2) Mark PCR duplicate HiFi reads by sample with [pbmarkdups](https://github.com/PacificBiosciences/pbmarkdup/)
 3) align HiFi reads to reference with [pbmm2](https://github.com/PacificBiosciences/pbmm2)
+    3b) optionally downsample
 4) call small variants with [DeepVariant](https://github.com/google/deepvariant), using two-pass method (DeepVariant :arrow_right: WhatsHap `phase` :arrow_right: WhatsHap `haplotag` :arrow_right: DeepVariant)
 5) phase small variants with [WhatsHap](https://github.com/whatshap/whatshap)
 6) haplotag aligned BAMs with WhatsHap
 7) call structural variants with [pbsv](https://github.com/pacificbiosciences/pbsv/)
 8) assemble reads with [hifiasm](https://github.com/chhylp123/hifiasm)
 9) jointly call all variants with glnexus
-10) [optionally] Run some QC reports
+10) [optionally] Run some QC reports including hsMetrics
 
 ## Directory structure within basedir
 
@@ -25,13 +26,18 @@
 │   └── <batch_id>  # bpatch_id
 │       ├── benchmarks/  # cpu time per task
 │       ├── demux/  # demultiplexed hifi reads
+│       ├── glnexus/  # intermediate cohot vcf files
 │       ├── logs/  # per-rule stdout/stderr logs
 │       ├── picard/  # interval lists for hsmetrics
-│       ├── stats/  # batch-wide collated reports
-│       ├── whatshap_cohort/  # joint-called, phased SNV
+│       ├── stats/  # batch-wide collated reports, including HS Metrics summary
+│           ├── downsample_maxreads1/  # downsampled results
+│           ├── downsample_maxreads1/  # downsampled results
+│           :   ...
+│           └── downsample_all/  # result without downsampling
+│       ├── whatshap_cohort/  # joint-called, phased SNV (subdivided by downsampling size)
 │       ├── <sample_id 1>/  # per-sample results, one for each sample
 │       :        ...
-│       └── <sample_id n>/  # per-sample results, one for each sample
+│       └── <sample_id n>/  # per-sample results, one for each sample, subdivided by downsampling size
 │           ├── aligned/  # intermediate
 │           ├── counts/ # read counts by target beds
 │           ├── coverage/ # read coverage by target beds

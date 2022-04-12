@@ -9,7 +9,7 @@ DPI=200
 readCsv      = sys.argv[1]
 targetBed    = sys.argv[2]
 targetBuffer = int(sys.argv[3])
-outDir       = sys.argv[3]
+outDir       = sys.argv[4]
 
 
 targets = pd.read_csv(targetBed,

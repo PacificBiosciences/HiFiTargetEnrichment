@@ -39,6 +39,7 @@ sns.histplot(data=allData,
              hue_order=hue_order,
              hue='category',
              multiple='stack',
+             binrange=(0,15000),
              ax=ax1)
 
 #side plot

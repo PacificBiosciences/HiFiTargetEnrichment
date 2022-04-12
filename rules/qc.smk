@@ -398,12 +398,11 @@ rule plot_multi_coverage:
     params:
         script=f'{config["scripts"]}/plot_multi_coverage.py',
         odir=f'batches/{batch}/stats/downsampled_{{maxreads}}',
-        buffer=5000,
     conda:
         'envs/python.yaml',
     shell:
         '''
-        python {params.script} {input} {params.buffer} {params.odir}
+        python {params.script} {input} {params.odir}
         '''
 
 rule plot_multi_read:
