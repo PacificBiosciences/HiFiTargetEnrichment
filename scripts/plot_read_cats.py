@@ -5,7 +5,7 @@ import sys
 
 allDemuxReads = pd.read_csv( sys.argv[1] )
 limaReport    = pd.read_csv( sys.argv[2], sep='\t', usecols=['ReadLengths','PassedFilters'] )
-dups          = pd.read_csv( sys.argv[3], usecols=['length','category'] )
+dups          = pd.read_csv( sys.argv[3], usecols=['sample','length','category'] )
 outdir        = sys.argv[4]
 
 #load data
@@ -62,7 +62,7 @@ plt.tight_layout()
 f.savefig(f'{outdir}/read_categories.png',dpi=400)
 
 # write readlength legnth stats table
-allData.dropna()\
+allData.fillna('noSampleData')\
        .groupby(['category','sample'])\
        .length.describe().dropna().astype(int)\
        .to_csv(f'{outdir}/read_length_by_sample.csv')

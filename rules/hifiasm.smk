@@ -5,7 +5,7 @@ rule samtools_fasta:
     input:
         lambda wildcards: f'batches/{batch}/{{sample}}/downsampled_{{maxreads}}/markdup/markdups.bam',
     output: 
-        f"batches/{batch}/{{sample}}/downsampled_{{maxreads}}/fasta/{{sample}}.fasta",
+        temp( f"batches/{batch}/{{sample}}/downsampled_{{maxreads}}/fasta/{{sample}}.fasta" ),
     params:
         filter=3328,
     log: 
@@ -23,7 +23,7 @@ rule seqtk_fastq_to_fasta:
     input:
         lambda wildcards: f'batches/{batch}/{{sample}}/downsampled_{{maxreads}}/markdup/markdups.fastq',
     output: 
-        f"batches/{batch}/{{sample}}/downsampled_{{maxreads}}/fasta/{{sample}}.fasta"
+        temp( f"batches/{batch}/{{sample}}/downsampled_{{maxreads}}/fasta/{{sample}}.fasta" ),
     log: 
         f"batches/{batch}/logs/seqtk/seq/{{sample}}.{{maxreads}}.log"
     conda: 

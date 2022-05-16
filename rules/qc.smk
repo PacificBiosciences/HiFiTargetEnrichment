@@ -215,7 +215,7 @@ rule merge_duplengths:
     input:
         expand( f'batches/{batch}/' + '{sample}/downsampled_{{maxreads}}/read_metrics/duplicate_lengths.csv', sample=sample2barcode.keys() ),
     output:
-        temp(f'batches/{batch}/stats/downsampled_{{maxreads}}/all_duplicate_lengths.csv'),
+        (f'batches/{batch}/stats/downsampled_{{maxreads}}/all_duplicate_lengths.csv'),
     shell:
         ''' 
         awk ' BEGIN {{ print "sample,length,category" }}

@@ -7,7 +7,7 @@ rule deepvariant_make_examples_round1:
         bai=f"batches/{batch}/{{sample}}/downsampled_{{maxreads}}/aligned/{{sample}}.{ref}.bam.bai",
         reference=config["ref"]["fasta"],
     output:
-        tfrecord=(
+        tfrecord=temp(
             f"batches/{batch}/{{sample}}/downsampled_{{maxreads}}/deepvariant_intermediate/examples/examples.tfrecord-{{shard}}-of-{config['N_SHARDS']:05}.gz"
         ),
     log:
@@ -48,7 +48,7 @@ rule deepvariant_call_variants_gpu_round1:
             shard=shards,
         ),
     output:
-        (
+        temp(
             f"batches/{batch}/{{sample}}/downsampled_{{maxreads}}/deepvariant_intermediate/{{sample}}.{ref}.call_variants_output.tfrecord.gz"
         ),
     log:
@@ -77,13 +77,13 @@ rule deepvariant_postprocess_variants_round1:
         tfrecord=f"batches/{batch}/{{sample}}/downsampled_{{maxreads}}/deepvariant_intermediate/{{sample}}.{ref}.call_variants_output.tfrecord.gz",
         reference=config["ref"]["fasta"],
     output:
-        vcf=(
+        vcf=temp(
             f"batches/{batch}/{{sample}}/downsampled_{{maxreads}}/deepvariant_intermediate/{{sample}}.{ref}.deepvariant.vcf.gz"
         ),
-        vcf_index=(
+        vcf_index=temp(
             f"batches/{batch}/{{sample}}/downsampled_{{maxreads}}/deepvariant_intermediate/{{sample}}.{ref}.deepvariant.vcf.gz.tbi"
         ),
-        report=(
+        report=temp(
             f"batches/{batch}/{{sample}}/downsampled_{{maxreads}}/deepvariant_intermediate/{{sample}}.{ref}.deepvariant.visual_report.html"
         ),
     log:
@@ -110,10 +110,10 @@ rule deepvariant_make_examples_round2:
         bai=f"batches/{batch}/{{sample}}/downsampled_{{maxreads}}/whatshap_intermediate/{{sample}}.{ref}.deepvariant.haplotagged.bam.bai",
         reference=config["ref"]["fasta"],
     output:
-        tfrecord=(
+        tfrecord=temp(
             f"batches/{batch}/{{sample}}/downsampled_{{maxreads}}/deepvariant/examples/examples.tfrecord-{{shard}}-of-{config['N_SHARDS']:05}.gz"
         ),
-        nonvariant_site_tfrecord=(
+        nonvariant_site_tfrecord=temp(
             f"batches/{batch}/{{sample}}/downsampled_{{maxreads}}/deepvariant/examples/gvcf.tfrecord-{{shard}}-of-{config['N_SHARDS']:05}.gz"
         ),
     log:
@@ -156,7 +156,7 @@ rule deepvariant_call_variants_gpu_round2:
             shard=shards,
         ),
     output:
-        (
+        temp(
             f"batches/{batch}/{{sample}}/downsampled_{{maxreads}}/deepvariant/{{sample}}.{ref}.call_variants_output.tfrecord.gz"
         ),
     log:

@@ -71,7 +71,7 @@ $ conda create \
     --channel bioconda \
     --channel conda-forge \
     --prefix ./conda_env \
-    python=3 snakemake=6 mamba lockfile
+    python=3 snakemake=6.15.5 mamba lockfile
 
 # activate the base conda environment
 $ conda activate ./conda_env

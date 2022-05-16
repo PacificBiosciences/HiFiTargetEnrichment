@@ -2,8 +2,8 @@ rule markdup_ubam:
     input:
         lambda wildcards: f'batches/{batch}/demux/demultiplex.{sample2barcode[wildcards.sample]}.bam',
     output:
-        markdup=f'batches/{batch}/{{sample}}/downsampled_all/markdup/markdups.bam',
-        idx=f'batches/{batch}/{{sample}}/downsampled_all/markdup/markdups.bam.bai',
+        markdup=temp( f'batches/{batch}/{{sample}}/downsampled_all/markdup/markdups.bam' ),
+        idx=temp( f'batches/{batch}/{{sample}}/downsampled_all/markdup/markdups.bam.bai' ),
     log:
         f"batches/{batch}/logs/pbmarkdup/{{sample}}.log",
     params:
@@ -30,7 +30,7 @@ rule pbindex_bam:
     input:
         f'batches/{batch}/{{sample}}/downsampled_all/markdup/markdups.bam',
     output:
-        f'batches/{batch}/{{sample}}/downsampled_all/markdup/markdups.bam.pbi',
+        temp( f'batches/{batch}/{{sample}}/downsampled_all/markdup/markdups.bam.pbi' ),
     conda:
         "envs/pbtools.yaml"
     shell:
@@ -42,8 +42,8 @@ rule markdup_fastq:
     input:
         lambda wildcards: f'batches/{batch}/demux/demultiplex.{sample2barcode[wildcards.sample]}.fastq',
     output:
-        markdup=f'batches/{batch}/{{sample}}/downsampled_all/markdup/markdups.fastq',
-        idx=f'batches/{batch}/{{sample}}/downsampled_all/markdup/markdups.fastq.fai',
+        markdup=temp( f'batches/{batch}/{{sample}}/downsampled_all/markdup/markdups.fastq' ),
+        idx=temp( f'batches/{batch}/{{sample}}/downsampled_all/markdup/markdups.fastq.fai' ),
     log:
         f"batches/{batch}/logs/pbmarkdup/{{sample}}.log",
     params:
@@ -71,7 +71,7 @@ rule downsample_bam:
         bam=f'batches/{batch}/{{sample}}/downsampled_all/markdup/markdups.bam',
         pbi=f'batches/{batch}/{{sample}}/downsampled_all/markdup/markdups.bam.pbi',
     output:
-        f"batches/{batch}/{{sample}}/downsampled_{{maxreads}}/markdup/markdups.bam",
+        temp( f"batches/{batch}/{{sample}}/downsampled_{{maxreads}}/markdup/markdups.bam" ),
     log:
         f"batches/{batch}/logs/pbcoretools/bamsieve/downsample.{{maxreads}}.{{sample}}.log",
     benchmark:
@@ -93,7 +93,7 @@ rule downsample_fastq:
     input:
         f'batches/{batch}/{{sample}}/downsampled_all/markdup/markdups.fastq',
     output:
-        temp(f"batches/{batch}/{{sample}}/downsampled_{{maxreads}}/markdup/markdups.fastq"),
+        temp( f"batches/{batch}/{{sample}}/downsampled_{{maxreads}}/markdup/markdups.fastq" ),
     log:
         f"batches/{batch}/logs/pbcoretools/bamsieve/downsample.{{maxreads}}.{{sample}}.log",
     benchmark:

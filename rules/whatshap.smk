@@ -6,7 +6,7 @@ rule whatshap_phase_round1:
         phaseinput=f"batches/{batch}/{{sample}}/downsampled_{{maxreads}}/aligned/{{sample}}.{ref}.bam",
         phaseinputindex=f"batches/{batch}/{{sample}}/downsampled_{{maxreads}}/aligned/{{sample}}.{ref}.bam.bai",
     output:
-        (
+        temp(
             f"batches/{batch}/{{sample}}/downsampled_{{maxreads}}/whatshap_intermediate/{{sample}}.{ref}.deepvariant.phased.vcf.gz"
         ),
     log:
@@ -34,7 +34,7 @@ rule whatshap_haplotag_round1:
         bam=f"batches/{batch}/{{sample}}/downsampled_{{maxreads}}/aligned/{{sample}}.{ref}.bam",
         bai=f"batches/{batch}/{{sample}}/downsampled_{{maxreads}}/aligned/{{sample}}.{ref}.bam.bai",
     output:
-        (
+        temp(
             f"batches/{batch}/{{sample}}/downsampled_{{maxreads}}/whatshap_intermediate/{{sample}}.{ref}.deepvariant.haplotagged.bam"
         ),
     log:
@@ -60,7 +60,7 @@ rule samtools_index_bam_haplotag1:
     input:
         f"batches/{batch}/{{sample}}/downsampled_{{maxreads}}/whatshap_intermediate/{{sample}}.{ref}.deepvariant.haplotagged.bam",
     output:
-        (
+        temp(
             f"batches/{batch}/{{sample}}/downsampled_{{maxreads}}/whatshap_intermediate/{{sample}}.{ref}.deepvariant.haplotagged.bam.bai"
         ),
     log:

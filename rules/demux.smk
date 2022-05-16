@@ -4,7 +4,7 @@ rule demux_ubam:
         barcodes=config["barcodes"],
         biosamples=config["biosamples"],
     output:
-        expand( f'batches/{batch}/demux/demultiplex.{{barcode}}.bam', barcode=barcode2sample.keys() ),
+        temp( expand( f'batches/{batch}/demux/demultiplex.{{barcode}}.bam', barcode=barcode2sample.keys() ) ),
         f'batches/{batch}/demux/demultiplex.lima.report',
     log:
         f"batches/{batch}/logs/lima/demux.log",
@@ -39,7 +39,7 @@ rule demux_fastq:
         barcodes=config["barcodes"],
         biosamples=config["biosamples"],
     output:
-        expand( f'batches/{batch}/demux/demultiplex.{{barcode}}.fastq', barcode=barcode2sample.keys() ),
+        temp( expand( f'batches/{batch}/demux/demultiplex.{{barcode}}.fastq', barcode=barcode2sample.keys() ) ),
         f'batches/{batch}/demux/demultiplex.lima.report',
     log:
         f"batches/{batch}/logs/lima/demux.log",
