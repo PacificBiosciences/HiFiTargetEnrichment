@@ -13,6 +13,7 @@
 9) jointly call all variants with glnexus
 10) [optionally] Run some QC reports including hsMetrics
 
+
 ## Directory structure within basedir
 
 ```text
@@ -30,8 +31,8 @@
 │       ├── logs/  # per-rule stdout/stderr logs
 │       ├── picard/  # interval lists for hsmetrics
 │       ├── stats/  # batch-wide collated reports, including HS Metrics summary
-│           ├── downsample_maxreads1/  # downsampled results
-│           ├── downsample_maxreads1/  # downsampled results
+│           ├── downsample_maxreads1/  # downsampled results, max1
+│           ├── downsample_maxreads2/  # downsampled results, max
 │           :   ...
 │           └── downsample_all/  # result without downsampling
 │       ├── whatshap_cohort/  # joint-called, phased SNV (subdivided by downsampling size)
