@@ -113,8 +113,7 @@ if config['QC']['runQC']:
 ruleorder: demux_ubam > demux_fastq
 ruleorder: downsample_bam > downsample_fastq
 ruleorder: pbmm2_align_ubam > pbmm2_align_fastq
-ruleorder: deepvariant_postprocess_variants_round2 > deepvariant_postprocess_variants_round1 > tabix_vcf
-
+ruleorder: deepvariant_postprocess_variants > tabix_vcf
 
 rule all:
     input:

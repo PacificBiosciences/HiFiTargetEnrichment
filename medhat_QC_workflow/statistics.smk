@@ -12,8 +12,9 @@ min_version("6.15.5")
 
 # Config File
 #############
-if os.path.isfile("config.yaml"):
-    configfile: "config.yaml"
+cpath = "workflow/medhat_QC_workflow/config.yaml"
+if os.path.isfile( cpath ):
+    configfile: cpath
 else:
     sys.exit("Looks like there is no config.yaml file in " + os.getcwd() + " make sure there is one or at least specify one with the --configfile commandline parameter.")
 #############

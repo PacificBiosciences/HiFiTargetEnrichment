@@ -5,7 +5,7 @@ tmpdir : '/scratch'
 barcodes : 'workflow/barcodes/Sequel_96_barcodes_v1.IDT_pad.fasta'
 
 # deepvariant
-DEEPVARIANT_VERSION : '1.3.0-gpu'  # GPU
+DEEPVARIANT_VERSION : '1.4.0-gpu'  # GPU
 N_SHARDS            : 96
 
 ref :
@@ -23,10 +23,10 @@ merge : 1000000
 # extra
 QC :
     runQC  : True
-    lowcov : 7
+    lowcov : 10
 
 picard :
-  near_distance : 10000
+  near_distance : 5000
   sample_size   : 1000
 
-downsample : [200000,500000]
+downsample : []

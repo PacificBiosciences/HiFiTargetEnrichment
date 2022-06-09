@@ -1,82 +1,4 @@
-rule whatshap_phase_round1:
-    input:
-        reference=config["ref"]["fasta"],
-        vcf=f"batches/{batch}/{{sample}}/downsampled_{{maxreads}}/deepvariant_intermediate/{{sample}}.{ref}.deepvariant.vcf.gz",
-        tbi=f"batches/{batch}/{{sample}}/downsampled_{{maxreads}}/deepvariant_intermediate/{{sample}}.{ref}.deepvariant.vcf.gz.tbi",
-        phaseinput=f"batches/{batch}/{{sample}}/downsampled_{{maxreads}}/aligned/{{sample}}.{ref}.bam",
-        phaseinputindex=f"batches/{batch}/{{sample}}/downsampled_{{maxreads}}/aligned/{{sample}}.{ref}.bam.bai",
-    output:
-        temp(
-            f"batches/{batch}/{{sample}}/downsampled_{{maxreads}}/whatshap_intermediate/{{sample}}.{ref}.deepvariant.phased.vcf.gz"
-        ),
-    log:
-        f"batches/{batch}/logs/whatshap/phase/{{sample}}.{{maxreads}}.{ref}.whatshap_intermediate.log",
-    benchmark:
-        f"batches/{batch}/benchmarks/{{sample}}.{{maxreads}}.wh_phase1.tsv"
-    conda:
-        "envs/whatshap.yaml"
-    message:
-        "Phasing {input.vcf} using {input.phaseinput}."
-    shell:
-        """
-        (whatshap phase \
-            --output {output} \
-            --reference {input.reference} \
-            {input.vcf} {input.phaseinput}) > {log} 2>&1
-        """
-
-
-rule whatshap_haplotag_round1:
-    input:
-        reference=config["ref"]["fasta"],
-        vcf=f"batches/{batch}/{{sample}}/downsampled_{{maxreads}}/whatshap_intermediate/{{sample}}.{ref}.deepvariant.phased.vcf.gz",
-        tbi=f"batches/{batch}/{{sample}}/downsampled_{{maxreads}}/whatshap_intermediate/{{sample}}.{ref}.deepvariant.phased.vcf.gz.tbi",
-        bam=f"batches/{batch}/{{sample}}/downsampled_{{maxreads}}/aligned/{{sample}}.{ref}.bam",
-        bai=f"batches/{batch}/{{sample}}/downsampled_{{maxreads}}/aligned/{{sample}}.{ref}.bam.bai",
-    output:
-        temp(
-            f"batches/{batch}/{{sample}}/downsampled_{{maxreads}}/whatshap_intermediate/{{sample}}.{ref}.deepvariant.haplotagged.bam"
-        ),
-    log:
-        f"batches/{batch}/logs/whatshap/haplotag/{{sample}}.{{maxreads}}.{ref}.whatshap_intermediate.log",
-    benchmark:
-        f"batches/{batch}/benchmarks/{{sample}}.{{maxreads}}.wh_haplotag1.tsv"
-    params:
-        "--tag-supplementary",
-    conda:
-        "envs/whatshap.yaml"
-    message:
-        "Haplotagging {input.bam} using phase information from {input.vcf}."
-    shell:
-        """
-        (whatshap haplotag {params} \
-            --output {output} \
-            --reference {input.reference} \
-            {input.vcf} {input.bam}) > {log} 2>&1
-        """
-
-
-rule samtools_index_bam_haplotag1:
-    input:
-        f"batches/{batch}/{{sample}}/downsampled_{{maxreads}}/whatshap_intermediate/{{sample}}.{ref}.deepvariant.haplotagged.bam",
-    output:
-        temp(
-            f"batches/{batch}/{{sample}}/downsampled_{{maxreads}}/whatshap_intermediate/{{sample}}.{ref}.deepvariant.haplotagged.bam.bai"
-        ),
-    log:
-        f"batches/{batch}/logs/samtools/index/whatshap_intermediate/{{sample}}.{{maxreads}}.{ref}.log",
-    benchmark:
-        f"batches/{batch}/benchmarks/{{sample}}.{{maxreads}}.wh_index_bam_haplotag1.tsv"
-    threads: 4
-    conda:
-        "envs/samtools.yaml"
-    message:
-        "Indexing {input}."
-    shell:
-        "(samtools index -@ 3 {input}) > {log} 2>&1"
-
-
-rule whatshap_phase_round2:
+rule whatshap_phase:
     input:
         reference=config["ref"]["fasta"],
         vcf=f"batches/{batch}/{{sample}}/downsampled_{{maxreads}}/deepvariant/{{sample}}.{ref}.deepvariant.vcf.gz",
@@ -133,7 +55,7 @@ rule whatshap_stats:
         """
 
 
-rule whatshap_haplotag_round2:
+rule whatshap_haplotag:
     input:
         reference=config["ref"]["fasta"],
         vcf=f"batches/{batch}/{{sample}}/downsampled_{{maxreads}}/whatshap/{{sample}}.{ref}.deepvariant.phased.vcf.gz",
@@ -145,7 +67,7 @@ rule whatshap_haplotag_round2:
     log:
         f"batches/{batch}/logs/whatshap/haplotag/{{sample}}.{{maxreads}}.{ref}.log",
     benchmark:
-        f"batches/{batch}/benchmarks/{{sample}}.{{maxreads}}.wh_haplotag2.tsv"
+        f"batches/{batch}/benchmarks/{{sample}}.{{maxreads}}.wh_haplotag.tsv"
     params:
         "--tag-supplementary",
     conda:
@@ -161,7 +83,7 @@ rule whatshap_haplotag_round2:
         """
 
 
-rule samtools_index_bam_haplotag2:
+rule samtools_index_bam_haplotag:
     input:
         f"batches/{batch}/{{sample}}/downsampled_{{maxreads}}/whatshap/{{sample}}.{ref}.deepvariant.haplotagged.bam",
     output:
@@ -169,7 +91,7 @@ rule samtools_index_bam_haplotag2:
     log:
         f"batches/{batch}/logs/samtools/index/whatshap/{{sample}}.{{maxreads}}.{ref}.log",
     benchmark:
-        f"batches/{batch}/benchmarks/{{sample}}.{{maxreads}}.wh_index_bam_haplotag2.tsv"
+        f"batches/{batch}/benchmarks/{{sample}}.{{maxreads}}.wh_index_bam_haplotag.tsv"
     threads: 4
     conda:
         "envs/samtools.yaml"
