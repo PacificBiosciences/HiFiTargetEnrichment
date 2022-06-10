@@ -17,21 +17,21 @@
 .
 ├── cluster_logs  # slurm stderr/stdout logs
 ├── reference
-│   ├── reference.chr_lengths.txt  # cut -f1,2 reference.fasta > reference.chr_lengths.txt
+│   ├── reference.chr_lengths.txt  # cut -f1,2 reference.fasta.fai > reference.chr_lengths.txt
 │   ├── reference.fasta
 │   └── reference.fasta.fai
 ├── batches
 │   └── <batch_id>  # bpatch_id
 │       ├── benchmarks/  # cpu time per task
 │       ├── demux/  # demultiplexed hifi reads
-│       ├── glnexus/  # intermediate cohot vcf files
+│       ├── glnexus/  # intermediate cohort vcf files
 │       ├── logs/  # per-rule stdout/stderr logs
 │       ├── picard/  # interval lists for hsmetrics
 │       ├── stats/  # batch-wide collated reports, including HS Metrics summary
-│       ├── whatshap_cohort/  # joint-called, phased SNV (subdivided by downsampling size)
+│       ├── whatshap_cohort/  # joint-called, phased SNV 
 │       ├── <sample_id 1>/  # per-sample results, one for each sample
 │       :        ...
-│       └── <sample_id n>/  # per-sample results, one for each sample, subdivided by downsampling size
+│       └── <sample_id n>/  # per-sample results, one for each sample
 │           ├── aligned/  # intermediate
 │           ├── counts/ # read counts by target beds
 │           ├── coverage/ # read coverage by target beds
