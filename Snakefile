@@ -1,9 +1,5 @@
 import re
 
-# get config file from run-script args for testing multiple panels
-#configfile: "workflow/config.yaml"
-
-
 ## prefix every task command with:
 # set -o pipefail  # trace ERR through pipes
 # umask 002  # group write permissions
@@ -38,15 +34,13 @@ include: "rules/preprocess.smk"
 include: "rules/pbmm2.smk"
 include: "rules/deepvariant.smk"
 include: "rules/whatshap.smk"
-include: "rules/pbsv.smk"
-include: "rules/hifiasm.smk"
 include: "rules/glnexus.smk"
 include: "rules/hsmetrics.smk"
 
 # DV
 targets.extend(
     [
-        f"batches/{batch}/{sample}/downsampled_{maxreads}/deepvariant/{sample}.{ref}.deepvariant.{suffix}"
+        f"batches/{batch}/{sample}/deepvariant/{sample}.{ref}.deepvariant.{suffix}"
         for suffix in [
             "vcf.gz",
             "vcf.gz.tbi",
@@ -56,13 +50,12 @@ targets.extend(
             "vcf.stats.txt",
         ]
         for sample in sample2barcode.keys()
-        for maxreads in config['downsample'] + ['all']
     ]
 )
 # WH
 targets.extend(
     [
-        f"batches/{batch}/{sample}/downsampled_{maxreads}/whatshap/{sample}.{ref}.deepvariant.{suffix}"
+        f"batches/{batch}/{sample}/whatshap/{sample}.{ref}.deepvariant.{suffix}"
         for suffix in [
             "phased.vcf.gz",
             "phased.vcf.gz.tbi",
@@ -73,45 +66,24 @@ targets.extend(
             "haplotagged.bam.bai",
         ]
         for sample in sample2barcode.keys()
-        for maxreads in config['downsample'] + ['all']
-    ]
-)
-#SV
-targets.extend(
-    [
-        f"batches/{batch}/{sample}/downsampled_{maxreads}/pbsv/{sample}.{ref}.pbsv.vcf"
-        for sample in sample2barcode.keys()
-        for maxreads in config['downsample'] + ['all']
     ]
 )
 
 # gVCF/cohort
-for maxreads in config['downsample'] + ['all']:
-    targets.extend(
-        [
-         f"batches/{batch}/whatshap_cohort/downsampled_{maxreads}/{batch}.{ref}.deepvariant.glnexus.phased.vcf.gz",
-         f"batches/{batch}/whatshap_cohort/downsampled_{maxreads}/{batch}.{ref}.deepvariant.glnexus.phased.gtf",
-         f"batches/{batch}/whatshap_cohort/downsampled_{maxreads}/{batch}.{ref}.deepvariant.glnexus.phased.tsv",
-         f"batches/{batch}/whatshap_cohort/downsampled_{maxreads}/{batch}.{ref}.deepvariant.glnexus.phased.blocklist"
-        ]
-    )
-
-# HiFiasm
 targets.extend(
-    [
-        f"batches/{batch}/{sample}/downsampled_{maxreads}/hifiasm/{sample}.asm.{ref}.htsbox.vcf.stats.txt"
-        for sample in sample2barcode.keys()
-        for maxreads in config['downsample'] + ['all']
-    ]
+        [
+         f"batches/{batch}/whatshap_cohort/{batch}.{ref}.deepvariant.glnexus.phased.vcf.gz",
+         f"batches/{batch}/whatshap_cohort/{batch}.{ref}.deepvariant.glnexus.phased.gtf",
+         f"batches/{batch}/whatshap_cohort/{batch}.{ref}.deepvariant.glnexus.phased.tsv",
+         f"batches/{batch}/whatshap_cohort/{batch}.{ref}.deepvariant.glnexus.phased.blocklist"
+        ]
 )
-
 
 # QC extras
 if config['QC']['runQC']:
     include: "rules/qc.smk"
 
 ruleorder: demux_ubam > demux_fastq
-ruleorder: downsample_bam > downsample_fastq
 ruleorder: pbmm2_align_ubam > pbmm2_align_fastq
 ruleorder: deepvariant_postprocess_variants > tabix_vcf
 

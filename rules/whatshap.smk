@@ -1,16 +1,16 @@
 rule whatshap_phase:
     input:
         reference=config["ref"]["fasta"],
-        vcf=f"batches/{batch}/{{sample}}/downsampled_{{maxreads}}/deepvariant/{{sample}}.{ref}.deepvariant.vcf.gz",
-        tbi=f"batches/{batch}/{{sample}}/downsampled_{{maxreads}}/deepvariant/{{sample}}.{ref}.deepvariant.vcf.gz.tbi",
-        phaseinput=f"batches/{batch}/{{sample}}/downsampled_{{maxreads}}/aligned/{{sample}}.{ref}.bam",
-        phaseinputindex=f"batches/{batch}/{{sample}}/downsampled_{{maxreads}}/aligned/{{sample}}.{ref}.bam.bai",
+        vcf=f"batches/{batch}/{{sample}}/deepvariant/{{sample}}.{ref}.deepvariant.vcf.gz",
+        tbi=f"batches/{batch}/{{sample}}/deepvariant/{{sample}}.{ref}.deepvariant.vcf.gz.tbi",
+        phaseinput=f"batches/{batch}/{{sample}}/aligned/{{sample}}.{ref}.bam",
+        phaseinputindex=f"batches/{batch}/{{sample}}/aligned/{{sample}}.{ref}.bam.bai",
     output:
-        f"batches/{batch}/{{sample}}/downsampled_{{maxreads}}/whatshap/{{sample}}.{ref}.deepvariant.phased.vcf.gz",
+        f"batches/{batch}/{{sample}}/whatshap/{{sample}}.{ref}.deepvariant.phased.vcf.gz",
     log:
-        f"batches/{batch}/logs/whatshap/phase/{{sample}}.{{maxreads}}.{ref}.log",
+        f"batches/{batch}/logs/whatshap/phase/{{sample}}.{ref}.log",
     benchmark:
-        f"batches/{batch}/benchmarks/{{sample}}.{{maxreads}}.wh_phase2.tsv"
+        f"batches/{batch}/benchmarks/whatshap/{{sample}}.phase.tsv"
     params:
         extra="--indels",
     conda:
@@ -29,17 +29,17 @@ rule whatshap_phase:
 
 rule whatshap_stats:
     input:
-        vcf=f"batches/{batch}/{{sample}}/downsampled_{{maxreads}}/whatshap/{{sample}}.{ref}.deepvariant.phased.vcf.gz",
-        tbi=f"batches/{batch}/{{sample}}/downsampled_{{maxreads}}/whatshap/{{sample}}.{ref}.deepvariant.phased.vcf.gz.tbi",
+        vcf=f"batches/{batch}/{{sample}}/whatshap/{{sample}}.{ref}.deepvariant.phased.vcf.gz",
+        tbi=f"batches/{batch}/{{sample}}/whatshap/{{sample}}.{ref}.deepvariant.phased.vcf.gz.tbi",
         chr_lengths=config["ref"]["chr_lengths"],
     output:
-        gtf=f"batches/{batch}/{{sample}}/downsampled_{{maxreads}}/whatshap/{{sample}}.{ref}.deepvariant.phased.gtf",
-        tsv=f"batches/{batch}/{{sample}}/downsampled_{{maxreads}}/whatshap/{{sample}}.{ref}.deepvariant.phased.tsv",
-        blocklist=f"batches/{batch}/{{sample}}/downsampled_{{maxreads}}/whatshap/{{sample}}.{ref}.deepvariant.phased.blocklist",
+        gtf=f"batches/{batch}/{{sample}}/whatshap/{{sample}}.{ref}.deepvariant.phased.gtf",
+        tsv=f"batches/{batch}/{{sample}}/whatshap/{{sample}}.{ref}.deepvariant.phased.tsv",
+        blocklist=f"batches/{batch}/{{sample}}/whatshap/{{sample}}.{ref}.deepvariant.phased.blocklist",
     log:
-        f"batches/{batch}/logs/whatshap/stats/{{sample}}.{{maxreads}}.{ref}.log",
+        f"batches/{batch}/logs/whatshap/stats/{{sample}}.{ref}.log",
     benchmark:
-        f"batches/{batch}/benchmarks/{{sample}}.{{maxreads}}.wh_stats.tsv"
+        f"batches/{batch}/benchmarks/whatshap/{{sample}}.stats.tsv"
     conda:
         "envs/whatshap.yaml"
     message:
@@ -58,16 +58,16 @@ rule whatshap_stats:
 rule whatshap_haplotag:
     input:
         reference=config["ref"]["fasta"],
-        vcf=f"batches/{batch}/{{sample}}/downsampled_{{maxreads}}/whatshap/{{sample}}.{ref}.deepvariant.phased.vcf.gz",
-        tbi=f"batches/{batch}/{{sample}}/downsampled_{{maxreads}}/whatshap/{{sample}}.{ref}.deepvariant.phased.vcf.gz.tbi",
-        bam=f"batches/{batch}/{{sample}}/downsampled_{{maxreads}}/aligned/{{sample}}.{ref}.bam",
-        bai=f"batches/{batch}/{{sample}}/downsampled_{{maxreads}}/aligned/{{sample}}.{ref}.bam.bai",
+        vcf=f"batches/{batch}/{{sample}}/whatshap/{{sample}}.{ref}.deepvariant.phased.vcf.gz",
+        tbi=f"batches/{batch}/{{sample}}/whatshap/{{sample}}.{ref}.deepvariant.phased.vcf.gz.tbi",
+        bam=f"batches/{batch}/{{sample}}/aligned/{{sample}}.{ref}.bam",
+        bai=f"batches/{batch}/{{sample}}/aligned/{{sample}}.{ref}.bam.bai",
     output:
-        f"batches/{batch}/{{sample}}/downsampled_{{maxreads}}/whatshap/{{sample}}.{ref}.deepvariant.haplotagged.bam",
+        f"batches/{batch}/{{sample}}/whatshap/{{sample}}.{ref}.deepvariant.haplotagged.bam",
     log:
-        f"batches/{batch}/logs/whatshap/haplotag/{{sample}}.{{maxreads}}.{ref}.log",
+        f"batches/{batch}/logs/whatshap/haplotag/{{sample}}.{ref}.log",
     benchmark:
-        f"batches/{batch}/benchmarks/{{sample}}.{{maxreads}}.wh_haplotag.tsv"
+        f"batches/{batch}/benchmarks/whatshap/{{sample}}.haplotag.tsv"
     params:
         "--tag-supplementary",
     conda:
@@ -85,13 +85,13 @@ rule whatshap_haplotag:
 
 rule samtools_index_bam_haplotag:
     input:
-        f"batches/{batch}/{{sample}}/downsampled_{{maxreads}}/whatshap/{{sample}}.{ref}.deepvariant.haplotagged.bam",
+        f"batches/{batch}/{{sample}}/whatshap/{{sample}}.{ref}.deepvariant.haplotagged.bam",
     output:
-        f"batches/{batch}/{{sample}}/downsampled_{{maxreads}}/whatshap/{{sample}}.{ref}.deepvariant.haplotagged.bam.bai",
+        f"batches/{batch}/{{sample}}/whatshap/{{sample}}.{ref}.deepvariant.haplotagged.bam.bai",
     log:
-        f"batches/{batch}/logs/samtools/index/whatshap/{{sample}}.{{maxreads}}.{ref}.log",
+        f"batches/{batch}/logs/samtools/index/whatshap/{{sample}}.{ref}.log",
     benchmark:
-        f"batches/{batch}/benchmarks/{{sample}}.{{maxreads}}.wh_index_bam_haplotag.tsv"
+        f"batches/{batch}/benchmarks/whatshap/{{sample}}.index_bam_haplotag.tsv"
     threads: 4
     conda:
         "envs/samtools.yaml"

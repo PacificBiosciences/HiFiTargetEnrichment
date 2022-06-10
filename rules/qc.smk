@@ -1,7 +1,6 @@
 localrules: 
     merge_read_metrics,
     consolidate_read_data,
-    consolidate_coverage_data,
     count_issue_element,
     get_coverage_fraction,
     create_exons_bed,
@@ -28,9 +27,9 @@ rule create_exons_bed:
 
 rule copy_beds:
     input:
-        lambda wildcards: config[wildcards.elem],
+        lambda wildcards: config[ wildcards.elem ],
     output:
-        temp(f'batches/{batch}/beds/{{elem}}.bed'),
+        temp( f'batches/{batch}/beds/{{elem}}.bed' ),
     message:
         "Copy beds for pipeline naming consistency"
     log:
@@ -43,11 +42,11 @@ rule copy_beds:
 rule count_ontarget:
     input:
         bed=lambda wildcards: f'batches/{batch}/beds/{wildcards.bedfile}.bed',
-        bam=f"batches/{batch}/{{sample}}/downsampled_{{maxreads}}/aligned/{{sample}}.{ref}.bam",
+        bam=f"batches/{batch}/{{sample}}/aligned/{{sample}}.{ref}.bam",
     output:
-        filtered=temp(f'batches/{batch}/{{sample}}/downsampled_{{maxreads}}/counts/readcount_{{bedfile}}.bam'),
-        by_elem=temp(f'batches/{batch}/{{sample}}/downsampled_{{maxreads}}/counts/readcount_{{bedfile}}.bed'),
-        by_read=temp(f'batches/{batch}/{{sample}}/downsampled_{{maxreads}}/counts/{{bedfile}}_per_read.csv'),
+        filtered=temp(f'batches/{batch}/{{sample}}/counts/readcount_{{bedfile}}.bam'),
+        by_elem=temp(f'batches/{batch}/{{sample}}/counts/readcount_{{bedfile}}.bed'),
+        by_read=temp(f'batches/{batch}/{{sample}}/counts/{{bedfile}}_per_read.csv'),
     params:
         elem='{bedfile}',
         filter=3328,  #not prim,not supp, not dup
@@ -71,11 +70,11 @@ rule count_ontarget:
 rule get_coverage:
     input:
         bed=lambda wildcards: f'batches/{batch}/beds/{wildcards.bedfile}.bed',
-        bam=f"batches/{batch}/{{sample}}/downsampled_{{maxreads}}/aligned/{{sample}}.{ref}.bam",
+        bam=f"batches/{batch}/{{sample}}/aligned/{{sample}}.{ref}.bam",
     output:
-        ontarget=temp(f'batches/{batch}/{{sample}}/downsampled_{{maxreads}}/coverage/{{bedfile}}_ontarget.bam'),
-        bg=f'batches/{batch}/{{sample}}/downsampled_{{maxreads}}/coverage/{{bedfile}}_coverage.bedgraph',
-        cov=f'batches/{batch}/{{sample}}/downsampled_{{maxreads}}/coverage/{{bedfile}}_base_coverage.csv',
+        ontarget=temp(f'batches/{batch}/{{sample}}/coverage/{{bedfile}}_ontarget.bam'),
+        bg=f'batches/{batch}/{{sample}}/coverage/{{bedfile}}_coverage.bedgraph',
+        cov=f'batches/{batch}/{{sample}}/coverage/{{bedfile}}_base_coverage.csv',
     params:
         sample='{sample}',
         filter=3328,
@@ -96,9 +95,9 @@ rule get_coverage:
 
 rule get_coverage_fraction:
     input:
-        f'batches/{batch}/{{sample}}/downsampled_{{maxreads}}/coverage/{{bedfile}}_base_coverage.csv',
+        f'batches/{batch}/{{sample}}/coverage/{{bedfile}}_base_coverage.csv',
     output:
-        f'batches/{batch}/{{sample}}/downsampled_{{maxreads}}/coverage/{{bedfile}}_base_coverage_fraction.csv',
+        f'batches/{batch}/{{sample}}/coverage/{{bedfile}}_base_coverage_fraction.csv',
     params:
         sample='{sample}',
         lowcov=config["QC"]["lowcov"],
@@ -124,9 +123,9 @@ rule get_coverage_fraction:
 
 rule summarize_coverage_fraction:
     input:
-        expand( f'batches/{batch}/' + '{sample}/downsampled_{{maxreads}}/coverage/{{bedfile}}_base_coverage_fraction.csv', sample=sample2barcode.keys() )
+        expand( f'batches/{batch}/' + '{sample}/coverage/{{bedfile}}_base_coverage_fraction.csv', sample=sample2barcode.keys() )
     output:
-        f'batches/{batch}/stats/downsampled_{{maxreads}}/{{bedfile}}_covered_fraction.csv',
+        f'batches/{batch}/stats/{{bedfile}}_covered_fraction.csv',
     shell:
         '''
         tail -qn1 {input} \
@@ -145,9 +144,9 @@ rule summarize_coverage_fraction:
 
 rule get_read_metrics:
     input:
-        bam=f"batches/{batch}/{{sample}}/downsampled_{{maxreads}}/aligned/{{sample}}.{ref}.bam",
+        bam=f"batches/{batch}/{{sample}}/aligned/{{sample}}.{ref}.bam",
     output:
-        stats=temp(f'batches/{batch}/{{sample}}/downsampled_{{maxreads}}/read_metrics/reads.csv'),
+        stats=temp(f'batches/{batch}/{{sample}}/read_metrics/reads.csv'),
     params:
         filter=3328,
     conda:
@@ -176,9 +175,9 @@ rule get_read_metrics:
 rule get_read_target_metrics:
     input:
         bed=config['targets'],
-        bam=f"batches/{batch}/{{sample}}/downsampled_{{maxreads}}/aligned/{{sample}}.{ref}.bam",
+        bam=f"batches/{batch}/{{sample}}/aligned/{{sample}}.{ref}.bam",
     output:
-        target=temp(f'batches/{batch}/{{sample}}/downsampled_{{maxreads}}/read_metrics/read_target.csv'),
+        target=temp(f'batches/{batch}/{{sample}}/read_metrics/read_target.csv'),
     params:
         filter=3328,
     conda:
@@ -195,9 +194,9 @@ rule get_read_target_metrics:
 
 rule get_duplicate_lengths:
     input:
-        f"batches/{batch}/{{sample}}/downsampled_{{maxreads}}/aligned/{{sample}}.{ref}.bam",
+        f"batches/{batch}/{{sample}}/aligned/{{sample}}.{ref}.bam",
     output:
-        temp(f'batches/{batch}/{{sample}}/downsampled_{{maxreads}}/read_metrics/duplicate_lengths.csv'),
+        temp(f'batches/{batch}/{{sample}}/read_metrics/duplicate_lengths.csv'),
     params:
         sample='{sample}'
     message:
@@ -213,9 +212,9 @@ rule get_duplicate_lengths:
 
 rule merge_duplengths:
     input:
-        expand( f'batches/{batch}/' + '{sample}/downsampled_{{maxreads}}/read_metrics/duplicate_lengths.csv', sample=sample2barcode.keys() ),
+        expand( f'batches/{batch}/' + '{sample}/read_metrics/duplicate_lengths.csv', sample=sample2barcode.keys() ),
     output:
-        (f'batches/{batch}/stats/downsampled_{{maxreads}}/all_duplicate_lengths.csv'),
+        temp(f'batches/{batch}/stats/all_duplicate_lengths.csv'),
     shell:
         ''' 
         awk ' BEGIN {{ print "sample,length,category" }}
@@ -225,9 +224,9 @@ rule merge_duplengths:
 rule endmost_probe:
     input:
         bed=config['probes'],
-        bam=f"batches/{batch}/{{sample}}/downsampled_{{maxreads}}/aligned/{{sample}}.{ref}.bam",
+        bam=f"batches/{batch}/{{sample}}/aligned/{{sample}}.{ref}.bam",
     output:
-        temp(f'batches/{batch}/{{sample}}/downsampled_{{maxreads}}/read_metrics/endmost_probe.csv')
+        temp(f'batches/{batch}/{{sample}}/read_metrics/endmost_probe.csv')
     params:
         filter=3328
     conda:
@@ -253,13 +252,13 @@ rule endmost_probe:
 
 rule merge_read_metrics:
     input:
-        stats=f'batches/{batch}/{{sample}}/downsampled_{{maxreads}}/read_metrics/reads.csv',
-        target=f'batches/{batch}/{{sample}}/downsampled_{{maxreads}}/read_metrics/read_target.csv',
-        probes=f'batches/{batch}/{{sample}}/downsampled_{{maxreads}}/counts/probes_per_read.csv', 
-        endprb=f'batches/{batch}/{{sample}}/downsampled_{{maxreads}}/read_metrics/endmost_probe.csv',
-        exons=f'batches/{batch}/{{sample}}/downsampled_{{maxreads}}/counts/exons_per_read.csv',
+        stats=f'batches/{batch}/{{sample}}/read_metrics/reads.csv',
+        target=f'batches/{batch}/{{sample}}/read_metrics/read_target.csv',
+        probes=f'batches/{batch}/{{sample}}/counts/probes_per_read.csv', 
+        endprb=f'batches/{batch}/{{sample}}/read_metrics/endmost_probe.csv',
+        exons=f'batches/{batch}/{{sample}}/counts/exons_per_read.csv',
     output:
-        f'batches/{batch}/{{sample}}/downsampled_{{maxreads}}/read_metrics/read_data.csv',
+        temp( f'batches/{batch}/{{sample}}/read_metrics/read_data.csv' ),
     params:
         sample='{sample}'
     shell:
@@ -291,10 +290,10 @@ rule merge_read_metrics:
 rule consolidate_read_data:
     input: 
         expand(
-                f'batches/{batch}/' + '{sample}/downsampled_{{maxreads}}/read_metrics/read_data.csv',sample=sample2barcode.keys()
+                f'batches/{batch}/' + '{sample}/read_metrics/read_data.csv',sample=sample2barcode.keys()
               ),
     output:
-        f'batches/{batch}/stats/downsampled_{{maxreads}}/all_read_data.csv',
+        f'batches/{batch}/stats/all_read_data.csv',
     shell:
         '''
         awk 'NR==1 || FNR>1' {input} > {output}
@@ -303,10 +302,10 @@ rule consolidate_read_data:
 rule consolidate_coverage:
     input:
         expand(
-                f'batches/{batch}/' + '{sample}/downsampled_{{maxreads}}/coverage/{{bedfile}}_base_coverage.csv',sample=sample2barcode.keys()
+                f'batches/{batch}/' + '{sample}/coverage/{{bedfile}}_base_coverage.csv',sample=sample2barcode.keys()
               ),
     output:
-        f'batches/{batch}/stats/downsampled_{{maxreads}}/all_{{bedfile}}_coverage.csv',
+        f'batches/{batch}/stats/all_{{bedfile}}_coverage.csv',
     shell:
         '''
         awk 'NR==1 || FNR>1' {input} > {output}
@@ -315,10 +314,10 @@ rule consolidate_coverage:
 rule count_issue_elements:
     input:
         expand(
-                f'batches/{batch}/' + '{sample}/downsampled_{{maxreads}}/counts/readcount_{{elem}}.bed', sample=sample2barcode.keys()
+                f'batches/{batch}/' + '{sample}/counts/readcount_{{elem}}.bed', sample=sample2barcode.keys()
               ),
     output:
-        f'batches/{batch}/stats/downsampled_{{maxreads}}/{{status}}/{{elem}}.csv',
+        f'batches/{batch}/stats/{{status}}/{{elem}}.csv',
     params:
         low= lambda wildcards: 0 if wildcards.status == 'dropped' else config['QC']['lowcov']
     shell:
@@ -349,10 +348,10 @@ rule gc_content:
 
 rule plot_read_metrics:
     input:
-        csv=f'batches/{batch}/{{sample}}/downsampled_{{maxreads}}/read_metrics/read_data.csv',
+        csv=f'batches/{batch}/{{sample}}/read_metrics/read_data.csv',
         bed=config['targets'],
     output:
-        [f'batches/{batch}/{{sample}}/downsampled_{{maxreads}}/read_metrics/{p}' 
+        [f'batches/{batch}/{{sample}}/read_metrics/{p}' 
           for p in 
             ['mean_base_coverage_by_target.png',
              'readlength_hist.png',
@@ -366,7 +365,7 @@ rule plot_read_metrics:
         ],
     params:
         script=f'{config["scripts"]}/plot_read_data.py',
-        odir=f'batches/{batch}/{{sample}}/downsampled_{{maxreads}}/read_metrics',
+        odir=f'batches/{batch}/{{sample}}/read_metrics',
         buffer=5000,
     conda:
         'envs/python.yaml',
@@ -377,12 +376,12 @@ rule plot_read_metrics:
 
 rule plot_coverage:
     input:
-        f'batches/{batch}/{{sample}}/downsampled_{{maxreads}}/coverage/targets_base_coverage.csv',
+        f'batches/{batch}/{{sample}}/coverage/targets_base_coverage.csv',
     output:
-        f'batches/{batch}/{{sample}}/downsampled_{{maxreads}}/coverage/coverage_by_target.png',
+        f'batches/{batch}/{{sample}}/coverage/coverage_by_target.png',
     params:
         script=f'{config["scripts"]}/plot_coverage.py',
-        odir=f'batches/{batch}/{{sample}}/downsampled_{{maxreads}}/coverage',
+        odir=f'batches/{batch}/{{sample}}/coverage',
     conda:
         'envs/python.yaml',
     shell:
@@ -392,12 +391,12 @@ rule plot_coverage:
 
 rule plot_multi_coverage:
     input:
-        f'batches/{batch}/stats/downsampled_{{maxreads}}/all_targets_coverage.csv',
+        f'batches/{batch}/stats/all_targets_coverage.csv',
     output:
-        f'batches/{batch}/stats/downsampled_{{maxreads}}/multi_coverage_by_target.png',
+        f'batches/{batch}/stats/multi_coverage_by_target.png',
     params:
         script=f'{config["scripts"]}/plot_multi_coverage.py',
-        odir=f'batches/{batch}/stats/downsampled_{{maxreads}}',
+        odir=f'batches/{batch}/stats',
     conda:
         'envs/python.yaml',
     shell:
@@ -407,11 +406,11 @@ rule plot_multi_coverage:
 
 rule plot_multi_read:
     input:
-        csv=f'batches/{batch}/stats/downsampled_{{maxreads}}/all_read_data.csv',
+        csv=f'batches/{batch}/stats/all_read_data.csv',
         bed=config['targets'],
     output:
         [
-          f'batches/{batch}/stats/downsampled_{{maxreads}}/{p}' 
+          f'batches/{batch}/stats/{p}' 
           for p in
             ['mean_base_coverage.png',
              'mean_base_coverage_by_sample.png',
@@ -422,7 +421,7 @@ rule plot_multi_read:
         ],
     params:
         script=f'{config["scripts"]}/plot_multi_reads.py',
-        odir=f'batches/{batch}/stats/downsampled_{{maxreads}}',
+        odir=f'batches/{batch}/stats',
         buffer=5000,
     conda:
         'envs/python.yaml',
@@ -433,15 +432,15 @@ rule plot_multi_read:
 
 rule plot_read_categories:
     input:
-        readCsv=f'batches/{batch}/stats/downsampled_{{maxreads}}/all_read_data.csv',
+        readCsv=f'batches/{batch}/stats/all_read_data.csv',
         lima=f'batches/{batch}/demux/demultiplex.lima.report',
-        dups=f'batches/{batch}/stats/downsampled_{{maxreads}}/all_duplicate_lengths.csv',
+        dups=f'batches/{batch}/stats/all_duplicate_lengths.csv',
     output:
-        f'batches/{batch}/stats/downsampled_{{maxreads}}/read_categories.png',
-        f'batches/{batch}/stats/downsampled_{{maxreads}}/read_length_by_sample.csv',
+        f'batches/{batch}/stats/read_categories.png',
+        f'batches/{batch}/stats/read_length_by_sample.csv',
     params:
         script=f'{config["scripts"]}/plot_read_cats.py',
-        odir=f'batches/{batch}/stats/downsampled_{{maxreads}}'
+        odir=f'batches/{batch}/stats/'
     conda:
         'envs/python.yaml',
     shell:
@@ -453,35 +452,31 @@ rule plot_read_categories:
 # extand targets
 targets.extend(
     [
-        f'batches/{batch}/{sample}/downsampled_{maxreads}/counts/readcount_{bedfile}.bed'
+        f'batches/{batch}/{sample}/counts/readcount_{bedfile}.bed'
         for sample in sample2barcode.keys()
         for bedfile in allBeds
-        for maxreads in config['downsample'] + ['all']
     ]
 )
 
 targets.extend(
     [
-        f'batches/{batch}/{sample}/downsampled_{maxreads}/counts/{bedfile}_per_read.csv'
+        f'batches/{batch}/{sample}/counts/{bedfile}_per_read.csv'
         for sample in sample2barcode.keys()
         for bedfile in allBeds
-        for maxreads in config['downsample'] + ['all']
     ]
 )
 
 targets.extend(
     [
-        f'batches/{batch}/{sample}/downsampled_{maxreads}/read_metrics/reads.csv'
+        f'batches/{batch}/{sample}/read_metrics/reads.csv'
         for sample in sample2barcode.keys()
-        for maxreads in config['downsample'] + ['all']
     ]
 )
 
 targets.extend(
     [
-        f'batches/{batch}/{sample}/downsampled_{maxreads}/read_metrics/read_data.csv'
+        f'batches/{batch}/{sample}/read_metrics/read_data.csv'
         for sample in sample2barcode.keys()
-        for maxreads in config['downsample'] + ['all']
     ]
 )
 
@@ -494,76 +489,67 @@ targets.extend(
 
 targets.extend(
     [
-        f'batches/{batch}/stats/downsampled_{maxreads}/all_{bedfile}_coverage.csv'
+        f'batches/{batch}/stats/all_{bedfile}_coverage.csv'
         for bedfile in ['targets','exons']
-        for maxreads in config['downsample'] + ['all']
     ]
 )
 
 targets.extend(
     [
-        f'batches/{batch}/{sample}/downsampled_{maxreads}/read_metrics/mean_base_coverage_by_target.png'
+        f'batches/{batch}/{sample}/read_metrics/mean_base_coverage_by_target.png'
         for sample in sample2barcode.keys()
-        for maxreads in config['downsample'] + ['all']
     ]
 )
 
 targets.extend(
     [
-        f'batches/{batch}/{sample}/downsampled_{maxreads}/coverage/coverage_by_target.png'
+        f'batches/{batch}/{sample}/coverage/coverage_by_target.png'
         for sample in sample2barcode.keys()
-        for maxreads in config['downsample'] + ['all']
     ]
 )
 
 targets.extend(
     [
-        f'batches/{batch}/stats/downsampled_{maxreads}/{status}/{elem}.csv'
+        f'batches/{batch}/stats/{status}/{elem}.csv'
         for status in ['dropped','lowcov']
         for elem in allBeds
-        for maxreads in config['downsample'] + ['all']
     ]
 )
 
 targets.extend(
     [
-        f'batches/{batch}/{sample}/downsampled_{maxreads}/coverage/{bedfile}_base_coverage_fraction.csv'
+        f'batches/{batch}/{sample}/coverage/{bedfile}_base_coverage_fraction.csv'
         for sample in sample2barcode.keys()
         for bedfile in ['targets','exons']
-        for maxreads in config['downsample'] + ['all']
     ]
 )
 
 targets.extend(
     [
-        f'batches/{batch}/stats/downsampled_{maxreads}/{bedfile}_covered_fraction.csv'
+        f'batches/{batch}/stats/{bedfile}_covered_fraction.csv'
         for bedfile in ['targets','exons']
-        for maxreads in config['downsample'] + ['all']
     ]
 )
 
-for maxreads in config['downsample'] + ['all']:
-    targets.extend(
+targets.extend(
         [
-            f'batches/{batch}/stats/downsampled_{maxreads}/all_read_data.csv',
-            f'batches/{batch}/stats/downsampled_{maxreads}/mean_base_coverage.png',
-            f'batches/{batch}/stats/downsampled_{maxreads}/multi_coverage_by_target.png',
-            f'batches/{batch}/stats/downsampled_{maxreads}/all_duplicate_lengths.csv'
+            f'batches/{batch}/stats/all_read_data.csv',
+            f'batches/{batch}/stats/mean_base_coverage.png',
+            f'batches/{batch}/stats/multi_coverage_by_target.png',
+            f'batches/{batch}/stats/all_duplicate_lengths.csv'
         ]
-    )
+)
 
 targets.extend(
     [
-        f'batches/{batch}/{sample}/downsampled_{maxreads}/read_metrics/duplicate_lengths.csv'
+        f'batches/{batch}/{sample}/read_metrics/duplicate_lengths.csv'
         for sample in sample2barcode.keys()
-        for maxreads in config['downsample'] + ['all']
     ]
 )
 
 targets.extend(
     [
-        f'batches/{batch}/stats/downsampled_{maxreads}/{fname}'
-        for maxreads in config['downsample'] + ['all']
+        f'batches/{batch}/stats/{fname}'
         for fname in ['read_categories.png','read_length_by_sample.csv']
     ]
 )

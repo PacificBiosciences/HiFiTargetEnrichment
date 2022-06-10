@@ -2,8 +2,8 @@ rule markdup_ubam:
     input:
         lambda wildcards: f'batches/{batch}/demux/demultiplex.{sample2barcode[wildcards.sample]}.bam',
     output:
-        markdup=temp( f'batches/{batch}/{{sample}}/downsampled_all/markdup/markdups.bam' ),
-        idx=temp( f'batches/{batch}/{{sample}}/downsampled_all/markdup/markdups.bam.bai' ),
+        markdup=temp( f'batches/{batch}/{{sample}}/markdup/markdups.bam' ),
+        idx=temp( f'batches/{batch}/{{sample}}/markdup/markdups.bam.bai' ),
     log:
         f"batches/{batch}/logs/pbmarkdup/{{sample}}.log",
     params:
@@ -28,9 +28,9 @@ rule markdup_ubam:
 
 rule pbindex_bam:
     input:
-        f'batches/{batch}/{{sample}}/downsampled_all/markdup/markdups.bam',
+        f'batches/{batch}/{{sample}}/markdup/markdups.bam',
     output:
-        temp( f'batches/{batch}/{{sample}}/downsampled_all/markdup/markdups.bam.pbi' ),
+        temp( f'batches/{batch}/{{sample}}/markdup/markdups.bam.pbi' ),
     conda:
         "envs/pbtools.yaml"
     shell:
@@ -42,8 +42,8 @@ rule markdup_fastq:
     input:
         lambda wildcards: f'batches/{batch}/demux/demultiplex.{sample2barcode[wildcards.sample]}.fastq',
     output:
-        markdup=temp( f'batches/{batch}/{{sample}}/downsampled_all/markdup/markdups.fastq' ),
-        idx=temp( f'batches/{batch}/{{sample}}/downsampled_all/markdup/markdups.fastq.fai' ),
+        markdup=temp( f'batches/{batch}/{{sample}}/markdup/markdups.fastq' ),
+        idx=temp( f'batches/{batch}/{{sample}}/markdup/markdups.fastq.fai' ),
     log:
         f"batches/{batch}/logs/pbmarkdup/{{sample}}.log",
     params:
@@ -64,49 +64,4 @@ rule markdup_fastq:
                    {params.options} \
                    {input} {output.markdup}
         samtools fqidx {output.dedup}) > {log} 2>&1
-        '''
-
-rule downsample_bam:
-    input:
-        bam=f'batches/{batch}/{{sample}}/downsampled_all/markdup/markdups.bam',
-        pbi=f'batches/{batch}/{{sample}}/downsampled_all/markdup/markdups.bam.pbi',
-    output:
-        temp( f"batches/{batch}/{{sample}}/downsampled_{{maxreads}}/markdup/markdups.bam" ),
-    log:
-        f"batches/{batch}/logs/pbcoretools/bamsieve/downsample.{{maxreads}}.{{sample}}.log",
-    benchmark:
-        f"batches/{batch}/benchmarks/pbtools/downsample.{{maxreads}}.{{sample}}.bam.tsv"
-    params:
-        maxreads='{maxreads}',
-        seed=42,
-    threads: 1
-    conda:
-        "envs/pbtools.yaml"
-    message:
-        "Downsampling {input.bam} to at most {params.maxreads}."
-    shell:
-        '''
-        bamsieve -s {params.seed} -n {params.maxreads} {input.bam} {output} > {log} 2>&1
-        '''
-
-rule downsample_fastq:
-    input:
-        f'batches/{batch}/{{sample}}/downsampled_all/markdup/markdups.fastq',
-    output:
-        temp( f"batches/{batch}/{{sample}}/downsampled_{{maxreads}}/markdup/markdups.fastq" ),
-    log:
-        f"batches/{batch}/logs/pbcoretools/bamsieve/downsample.{{maxreads}}.{{sample}}.log",
-    benchmark:
-        f"batches/{batch}/benchmarks/seqtk/downsample.{{maxreads}}.{{sample}}.fastq.tsv"
-    params:
-        maxreads='{maxreads}',
-        seed=42,
-    threads: 1
-    conda:
-        "envs/seqtk.yaml"
-    message:
-        "Downsampling {input} to at most {params.maxreads}."
-    shell:
-        '''
-        ( seqtk sample -s {params.seed} {input} {params.maxreads} > {output} ) > {log} 2>&1
         '''

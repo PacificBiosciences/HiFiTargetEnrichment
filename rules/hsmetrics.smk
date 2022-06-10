@@ -19,7 +19,7 @@ rule bed_to_interval_list:
         bed=lambda wildcards: config[wildcards.bedfile],
         dict=f"batches/{batch}/picard/reference.dict",
     output:
-        f"batches/{batch}/picard/{{bedfile}}.interval_list",
+        temp( f"batches/{batch}/picard/{{bedfile}}.interval_list" ),
     log:
         f"batches/{batch}/logs/picard/bedtointervallist/{{bedfile}}.log",
     params:
@@ -31,14 +31,14 @@ rule bed_to_interval_list:
 
 rule picard_collect_hs_metrics:
     input:
-        bam=f"batches/{batch}/{{sample}}/downsampled_{{maxreads}}/whatshap/{{sample}}.{ref}.deepvariant.haplotagged.bam",
+        bam=f"batches/{batch}/{{sample}}/whatshap/{{sample}}.{ref}.deepvariant.haplotagged.bam",
         reference=config["ref"]["fasta"],
         # Baits and targets should be given as interval lists. These can
         # be generated from bed files using picard BedToIntervalList.
         bait_intervals=f"batches/{batch}/picard/probes.interval_list",
         target_intervals=f"batches/{batch}/picard/targets.interval_list",
     output:
-        f"batches/{batch}/{{sample}}/downsampled_{{maxreads}}/hs_metrics/hs_metrics.txt",
+        f"batches/{batch}/{{sample}}/hs_metrics/hs_metrics.txt",
     params:
         # Optional extra arguments. Here we reduce sample size
         # to reduce the runtime in our unit test.
@@ -50,15 +50,15 @@ rule picard_collect_hs_metrics:
     resources:
         mem_mb=1024,
     log:
-        f"batches/{batch}/logs/picard/collect_hs_metrics/{{sample}}.{{maxreads}}.log",
+        f"batches/{batch}/logs/picard/collect_hs_metrics/{{sample}}.log",
     wrapper:
         "v1.3.1/bio/picard/collecthsmetrics"
 
 rule consolidate_hsmetrics:
     input:
-        expand( f'batches/{batch}/' + '{sample}/downsampled_{{maxreads}}/hs_metrics/hs_metrics.txt', sample=sample2barcode.keys() ),
+        expand( f'batches/{batch}/' + '{sample}/hs_metrics/hs_metrics.txt', sample=sample2barcode.keys() ),
     output:
-        f"batches/{batch}/stats/downsampled_{{maxreads}}/hs_metrics_consolidated.tsv",
+        f"batches/{batch}/stats/hs_metrics_consolidated.tsv",
     shell:
         '''
         awk '/METRICS/ {{getline; print;
@@ -84,9 +84,9 @@ quickviewColumns = [
 
 rule hsmetrics_quickview:
     input:
-        f"batches/{batch}/stats/downsampled_{{maxreads}}/hs_metrics_consolidated.tsv",
+        f"batches/{batch}/stats/hs_metrics_consolidated.tsv",
     output:
-        f"batches/{batch}/stats/downsampled_{{maxreads}}/hs_metrics_consolidated_quickview.tsv",
+        f"batches/{batch}/stats/hs_metrics_consolidated_quickview.tsv",
     run:
         import csv
         from operator import itemgetter
@@ -102,22 +102,19 @@ rule hsmetrics_quickview:
 
 targets.extend(
     [
-        f"batches/{batch}/{sample}/downsampled_{maxreads}/hs_metrics/hs_metrics.txt"
+        f"batches/{batch}/{sample}/hs_metrics/hs_metrics.txt"
         for sample in sample2barcode.keys()
-        for maxreads in config['downsample'] + ['all']
     ]
 )
 
 targets.extend(
     [
-         f"batches/{batch}/stats/downsampled_{maxreads}/hs_metrics_consolidated.tsv"
-        for maxreads in config['downsample'] + ['all']
+         f"batches/{batch}/stats/hs_metrics_consolidated.tsv"
     ]
 )
 
 targets.extend(
     [
-         f"batches/{batch}/stats/downsampled_{maxreads}/hs_metrics_consolidated_quickview.tsv"
-        for maxreads in config['downsample'] + ['all']
+         f"batches/{batch}/stats/hs_metrics_consolidated_quickview.tsv"
     ]
 )

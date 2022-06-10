@@ -13,8 +13,8 @@ ref :
   fasta       : 'reference/human_GRCh38_no_alt_analysis_set.fasta'
   index       : 'reference/human_GRCh38_no_alt_analysis_set.fasta.fai'
   chr_lengths : 'reference/human_GRCh38_no_alt_analysis_set.chr_lengths.txt'  # cut -f1,2 reference.fasta.fa > reference.chr_lengths.txt
-  tr_bed      : 'workflow/targets/tandem_repeats.bed'
-  exons       : 'workflow/targets/all_hg38_exons_ensembl.bed'
+  tr_bed      : 'workflow/aux/tandem_repeats.bed'
+  exons       : 'workflow/aux/all_hg38_exons_ensembl.bed'
 
 # glnexus
 GLNEXUS_VERSION : 'v1.4.1'
@@ -28,5 +28,3 @@ QC :
 picard :
   near_distance : 5000
   sample_size   : 1000
-
-downsample : []

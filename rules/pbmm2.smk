@@ -2,14 +2,14 @@ rule pbmm2_align_ubam:
     input:
         reference=config["ref"]["fasta"],
         ref_index=config["ref"]["index"],
-        query=f'batches/{batch}/{{sample}}/downsampled_{{maxreads}}/markdup/markdups.bam',
+        query=f'batches/{batch}/{{sample}}/markdup/markdups.bam',
     output:
-        bam=(f"batches/{batch}/{{sample}}/downsampled_{{maxreads}}/aligned/{{sample}}.{ref}.bam"),
-        bai=(f"batches/{batch}/{{sample}}/downsampled_{{maxreads}}/aligned/{{sample}}.{ref}.bam.bai"),
+        bam=temp(f"batches/{batch}/{{sample}}/aligned/{{sample}}.{ref}.bam"),
+        bai=temp(f"batches/{batch}/{{sample}}/aligned/{{sample}}.{ref}.bam.bai"),
     log:
-        f"batches/{batch}/logs/pbmm2/align/{{sample}}.{{maxreads}}.{ref}.log",
+        f"batches/{batch}/logs/pbmm2/align/{{sample}}.{ref}.log",
     benchmark:
-        f"batches/{batch}/benchmarks/{{sample}}.{{maxreads}}.pbmm2.bam.tsv"
+        f"batches/{batch}/benchmarks/pbmm2/{{sample}}.{ref}.bam.tsv"
     params:
         sample="{sample}",
         preset="HiFi",
@@ -36,14 +36,14 @@ rule pbmm2_align_fastq:
     input:
         reference=config["ref"]["fasta"],
         ref_index=config["ref"]["index"],
-        query=lambda wildcards: f'batches/{batch}/{{sample}}/downsampled_{{maxreads}}/downsampled/markdups.fastq',
+        query=lambda wildcards: f'batches/{batch}/{{sample}}/markdups.fastq',
     output:
-        bam=(f"batches/{batch}/{{sample}}/downsampled_{{maxreads}}/aligned/{{sample}}.{ref}.bam"),
-        bai=(f"batches/{batch}/{{sample}}/downsampled_{{maxreads}}/aligned/{{sample}}.{ref}.bam.bai"),
+        bam=temp(f"batches/{batch}/{{sample}}/aligned/{{sample}}.{ref}.bam"),
+        bai=temp(f"batches/{batch}/{{sample}}/aligned/{{sample}}.{ref}.bam.bai"),
     log:
-        f"batches/{batch}/logs/pbmm2/align/{{sample}}.{{maxreads}}.{ref}.log",
+        f"batches/{batch}/logs/pbmm2/align/{{sample}}.{ref}.log",
     benchmark:
-        f"batches/{batch}/benchmarks/{{sample}}.{{maxreads}}.pbmm2.fastq.tsv"
+        f"batches/{batch}/benchmarks/pbmm2/{{sample}}.{ref}.fastq.tsv"
     params:
         sample="{sample}",
         preset="HiFi",

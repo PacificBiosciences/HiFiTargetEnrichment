@@ -3,26 +3,26 @@ shards = [f"{x:05}" for x in range(config["N_SHARDS"])]
 
 rule deepvariant_make_examples:
     input:
-        bam=f"batches/{batch}/{{sample}}/downsampled_{{maxreads}}/aligned/{{sample}}.{ref}.bam",
-        bai=f"batches/{batch}/{{sample}}/downsampled_{{maxreads}}/aligned/{{sample}}.{ref}.bam.bai",
+        bam=f"batches/{batch}/{{sample}}/aligned/{{sample}}.{ref}.bam",
+        bai=f"batches/{batch}/{{sample}}/aligned/{{sample}}.{ref}.bam.bai",
         reference=config["ref"]["fasta"],
     output:
         tfrecord=(
-            f"batches/{batch}/{{sample}}/downsampled_{{maxreads}}/deepvariant/examples/examples.tfrecord-{{shard}}-of-{config['N_SHARDS']:05}.gz"
+            f"batches/{batch}/{{sample}}/deepvariant/examples/examples.tfrecord-{{shard}}-of-{config['N_SHARDS']:05}.gz"
         ),
-        nonvariant_site_tfrecord=f"batches/{batch}/{{sample}}/downsampled_{{maxreads}}/deepvariant/examples/gvcf.tfrecord-{{shard}}-of-{config['N_SHARDS']:05}.gz",
+        nonvariant_site_tfrecord=f"batches/{batch}/{{sample}}/deepvariant/examples/gvcf.tfrecord-{{shard}}-of-{config['N_SHARDS']:05}.gz",
     log:
-        f"batches/{batch}/logs/deepvariant/make_examples/{{sample}}.{{maxreads}}.{ref}.{{shard}}-of-{config['N_SHARDS']:05}.log",
+        f"batches/{batch}/logs/deepvariant/make_examples/{{sample}}.{ref}.{{shard}}-of-{config['N_SHARDS']:05}.log",
     benchmark:
-        f"batches/{batch}/benchmarks/deepvariant/{{sample}}.{{maxreads}}.{{shard}}.dv_make_examples.tsv"
+        f"batches/{batch}/benchmarks/deepvariant/{{sample}}.{{shard}}.dv_make_examples.tsv"
     container:
         f"docker://google/deepvariant:{config['DEEPVARIANT_VERSION']}"
     params:
         vsc_min_fraction_indels="0.12",
         pileup_image_width=199,
         shard='{shard}',
-        examples=f"batches/{batch}/{{sample}}/downsampled_{{maxreads}}/deepvariant/examples/examples.tfrecord@{config['N_SHARDS']}.gz",
-        gvcf=f"batches/{batch}/{{sample}}/downsampled_{{maxreads}}/deepvariant/examples/gvcf.tfrecord@{config['N_SHARDS']}.gz",
+        examples=f"batches/{batch}/{{sample}}/deepvariant/examples/examples.tfrecord@{config['N_SHARDS']}.gz",
+        gvcf=f"batches/{batch}/{{sample}}/deepvariant/examples/gvcf.tfrecord@{config['N_SHARDS']}.gz",
     message:
         "DeepVariant make_examples {wildcards.shard} for {input.bam}."
     shell:
@@ -51,22 +51,22 @@ rule deepvariant_make_examples:
 rule deepvariant_call_variants_gpu:
     input:
         expand(
-            f"batches/{batch}/" + "{{sample}}/downsampled_{{maxreads}}/deepvariant/examples/examples.tfrecord-{shard}" + f"-of-{config['N_SHARDS']:05}.gz",
+            f"batches/{batch}/" + "{{sample}}/deepvariant/examples/examples.tfrecord-{shard}" + f"-of-{config['N_SHARDS']:05}.gz",
             shard=shards,
         ),
     output:
         (
-            f"batches/{batch}/{{sample}}/downsampled_{{maxreads}}/deepvariant/{{sample}}.{ref}.call_variants_output.tfrecord.gz"
+            f"batches/{batch}/{{sample}}/deepvariant/{{sample}}.{ref}.call_variants_output.tfrecord.gz"
         ),
     log:
-        f"batches/{batch}/logs/deepvariant/call_variants/{{sample}}.{{maxreads}}.{ref}.log",
+        f"batches/{batch}/logs/deepvariant/call_variants/{{sample}}.{ref}.log",
     benchmark:
-        f"batches/{batch}/benchmarks/deepvariant/{{sample}}.{{maxreads}}.dv_call_variants.tsv"
+        f"batches/{batch}/benchmarks/deepvariant/{{sample}}.dv_call_variants.tsv"
     container:
         f"docker://google/deepvariant:{config['DEEPVARIANT_VERSION']}"
     params:
         model="/opt/models/pacbio/model.ckpt",
-        examples=f"batches/{batch}/{{sample}}/downsampled_{{maxreads}}/deepvariant/examples/examples.tfrecord@{config['N_SHARDS']:05}.gz",
+        examples=f"batches/{batch}/{{sample}}/deepvariant/examples/examples.tfrecord@{config['N_SHARDS']:05}.gz",
     threads: 8
     message:
         "DeepVariant call_variants for {input}."
@@ -82,24 +82,24 @@ rule deepvariant_call_variants_gpu:
 
 rule deepvariant_postprocess_variants:
     input:
-        tfrecord=f"batches/{batch}/{{sample}}/downsampled_{{maxreads}}/deepvariant/{{sample}}.{ref}.call_variants_output.tfrecord.gz",
+        tfrecord=f"batches/{batch}/{{sample}}/deepvariant/{{sample}}.{ref}.call_variants_output.tfrecord.gz",
         nonvariant_site_tfrecord=expand(
-            f"batches/{batch}/" + "{{sample}}/downsampled_{{maxreads}}/deepvariant/examples/gvcf.tfrecord-{shard}" + f"-of-{config['N_SHARDS']:05}.gz",
+            f"batches/{batch}/" + "{{sample}}/deepvariant/examples/gvcf.tfrecord-{shard}" + f"-of-{config['N_SHARDS']:05}.gz",
             shard=shards
         ),
         reference=config["ref"]["fasta"],
     output:
-        vcf=f"batches/{batch}/{{sample}}/downsampled_{{maxreads}}/deepvariant/{{sample}}.{ref}.deepvariant.vcf.gz",
-        vcf_index=f"batches/{batch}/{{sample}}/downsampled_{{maxreads}}/deepvariant/{{sample}}.{ref}.deepvariant.vcf.gz.tbi",
-        gvcf=f"batches/{batch}/{{sample}}/downsampled_{{maxreads}}/deepvariant/{{sample}}.{ref}.deepvariant.g.vcf.gz",
-        gvcf_index=f"batches/{batch}/{{sample}}/downsampled_{{maxreads}}/deepvariant/{{sample}}.{ref}.deepvariant.g.vcf.gz.tbi",
-        report=f"batches/{batch}/{{sample}}/downsampled_{{maxreads}}/deepvariant/{{sample}}.{ref}.deepvariant.visual_report.html",
+        vcf=f"batches/{batch}/{{sample}}/deepvariant/{{sample}}.{ref}.deepvariant.vcf.gz",
+        vcf_index=f"batches/{batch}/{{sample}}/deepvariant/{{sample}}.{ref}.deepvariant.vcf.gz.tbi",
+        gvcf=f"batches/{batch}/{{sample}}/deepvariant/{{sample}}.{ref}.deepvariant.g.vcf.gz",
+        gvcf_index=f"batches/{batch}/{{sample}}/deepvariant/{{sample}}.{ref}.deepvariant.g.vcf.gz.tbi",
+        report=f"batches/{batch}/{{sample}}/deepvariant/{{sample}}.{ref}.deepvariant.visual_report.html",
     params:
-        nonvariant_tfrecs=f"batches/{batch}/{{sample}}/downsampled_{{maxreads}}/deepvariant/examples/gvcf.tfrecord@{config['N_SHARDS']}.gz",
+        nonvariant_tfrecs=f"batches/{batch}/{{sample}}/deepvariant/examples/gvcf.tfrecord@{config['N_SHARDS']}.gz",
     log:
-        f"batches/{batch}/logs/deepvariant/postprocess_variants/{{sample}}.{{maxreads}}.{ref}.log",
+        f"batches/{batch}/logs/deepvariant/postprocess_variants/{{sample}}.{ref}.log",
     benchmark:
-        f"batches/{batch}/benchmarks/deepvariant/{{sample}}.{{maxreads}}.dv_postprocess.tsv"
+        f"batches/{batch}/benchmarks/deepvariant/{{sample}}.dv_postprocess.tsv"
     container:
         f"docker://google/deepvariant:{config['DEEPVARIANT_VERSION']}"
     threads: 4
@@ -117,13 +117,13 @@ rule deepvariant_postprocess_variants:
 
 rule deepvariant_bcftools_stats:
     input:
-        f"batches/{batch}/{{sample}}/downsampled_{{maxreads}}/deepvariant/{{sample}}.{ref}.deepvariant.vcf.gz",
+        f"batches/{batch}/{{sample}}/deepvariant/{{sample}}.{ref}.deepvariant.vcf.gz",
     output:
-        f"batches/{batch}/{{sample}}/downsampled_{{maxreads}}/deepvariant/{{sample}}.{ref}.deepvariant.vcf.stats.txt",
+        f"batches/{batch}/{{sample}}/deepvariant/{{sample}}.{ref}.deepvariant.vcf.stats.txt",
     log:
-        f"batches/{batch}/logs/bcftools/stats/{{sample}}.{{maxreads}}.{ref}.deepvariant.vcf.log",
+        f"batches/{batch}/logs/bcftools/stats/{{sample}}.{ref}.deepvariant.vcf.log",
     benchmark:
-        f"batches/{batch}/benchmarks/deepvariant/{{sample}}.{{maxreads}}.dv_bcftools_stats.tsv"
+        f"batches/{batch}/benchmarks/deepvariant/{{sample}}.dv_bcftools_stats.tsv"
     params:
         f"--fasta-ref {config['ref']['fasta']} --apply-filters PASS -s {{sample}}",
     threads: 4
