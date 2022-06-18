@@ -66,6 +66,6 @@ $ mkdir reference cluster_logs
 
 # drop your reference.fasta and reference.fasta.fai into reference and adjust the path in workflow/config.yaml
 
-# run the workflow for batch <batch_id>
+# run the workflow for batch <batch_name>
 $ sbatch workflow/run_snakemake.sh <batch_name> <biosample_csv> <hifi_reads> <target_bed> <probe_bed>
 ```
