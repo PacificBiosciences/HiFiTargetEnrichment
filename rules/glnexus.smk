@@ -13,7 +13,7 @@ checkpoint make_regions:
     input:
         config['targets'],
     output:
-        temp( f'batches/{batch}/glnexus/regions.bed' ),
+        ( f'batches/{batch}/glnexus/regions.bed' ),
     params:
         distance=config['merge'],
     log:
@@ -24,7 +24,7 @@ checkpoint make_regions:
         'Generating process regions for {input}'
     shell:
         '''
-        (bedtools merge -i <(sort -k1,1 -k2,2n {input}) -d {params.distance} -c 4 -o collapse -delim - > {output}) 2> {log}
+        (bedtools merge -i <(sort -k1,1 -k2,2n {input}) -d {params.distance} -c 4 -o first > {output}) 2> {log}
         '''
 
 

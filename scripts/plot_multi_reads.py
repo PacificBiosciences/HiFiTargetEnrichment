@@ -6,10 +6,16 @@ import sys
 
 DPI=400
 
-readCsv      = sys.argv[1]
-targetBed    = sys.argv[2]
-targetBuffer = int(sys.argv[3])
-outDir       = sys.argv[4]
+readCsv       = sys.argv[1]
+targetBed     = sys.argv[2]
+targetBuffer  = int(sys.argv[3])
+targetPerPlot = int(sys.argv[4])
+outDir        = sys.argv[5]
+
+# function for partitioning target sets into readable subplots
+def partition(lst, size):
+    for i in range(0, len(lst), size):
+        yield lst[i:i+size]
 
 targets = pd.read_csv(targetBed,
                       sep='\t',
@@ -33,22 +39,36 @@ pdata = data.query(' target != "off-target" ')\
 
 pdata['meanBaseCoverage'] = pdata.length / pdata.target.map(targets.tlength)
 
-
+# assign groups to partition targets
 order = sorted(pdata.target.unique())
+grps = { tgt:i for i,grp in enumerate( partition( order, targetPerPlot ) ) for tgt in grp }
+pdata[ 'plotGroup' ] = pdata.target.map(grps)
+
 g = sns.catplot(data=pdata,
-                x='target',order=order,
+                x='target',sharex=False,
                 y='meanBaseCoverage',
+                col='plotGroup', col_wrap=2,
                 kind='box',aspect=2)
-plt.xticks(rotation=45)
+g.set_xticklabels(rotation=45);
+# remove plotgroup labels
+for ax in g.axes.flatten():
+    ax.set_title('')
+plt.tight_layout()
 g.savefig(f'{outDir}/mean_base_coverage.png',dpi=DPI)
 plt.clf()
 
 g = sns.catplot(data=pdata,
-                x='target',order=order,
+                x='target', sharex=False,
                 y='meanBaseCoverage',
+                col='plotGroup', col_wrap=2,
                 hue='sample',
-                kind='strip',aspect=2)
-plt.xticks(rotation=45)
+                kind='strip',aspect=2 )
+                #facet_kws=dict(legend_out=True))
+g.set_xticklabels(rotation=45);
+for ax in g.axes.flatten():
+    ax.set_title('')
+sns.move_legend(g, "upper left", bbox_to_anchor=(1, 0.75), frameon=False)
+plt.tight_layout()
 g.savefig(f'{outDir}/mean_base_coverage_by_sample.png',dpi=DPI)
 plt.clf()
 
@@ -66,13 +86,19 @@ pdata = data.groupby(['target','sample'])\
             .apply(dedup_rate)\
             .rename('Duplication Rate')\
             .reset_index()
-
 order = sorted(pdata.target.unique())
+grps = { tgt:i for i,grp in enumerate( partition( order, targetPerPlot ) ) for tgt in grp }
+pdata[ 'plotGroup' ] = pdata.target.map(grps)
+
 g = sns.catplot(data=pdata,
-                x='target',order=order,
+                x='target', sharex=False,
+                col='plotGroup',col_wrap=2,
                 y='Duplication Rate',
                 kind='box',aspect=2)
-plt.xticks(rotation=45);
+g.set_xticklabels(rotation=45);
+for ax in g.axes.flatten():
+    ax.set_title('')
+plt.tight_layout()
 g.savefig(f'{outDir}/dedup_rate_by_target.png',dpi=DPI)
 plt.clf()
 
@@ -84,11 +110,17 @@ print('writing dedup_length')
 pdata = data
          
 order = sorted(pdata.target.unique())
+grps = { tgt:i for i,grp in enumerate( partition( order, targetPerPlot ) ) for tgt in grp }
+pdata[ 'plotGroup' ] = pdata.target.map(grps)
 g = sns.catplot( data=pdata,
-                 x='target',
+                 x='target', sharex=False,
+                 col='plotGroup',col_wrap=2,
                  y='length',
                  kind='violin',aspect=2)
-plt.xticks(rotation=45);
+g.set_xticklabels(rotation=45);
+for ax in g.axes.flatten():
+    ax.set_title('')
+plt.tight_layout()
 g.savefig(f'{outDir}/dedup_length_by_target.png',dpi=DPI)
 plt.clf()
 
@@ -104,10 +136,7 @@ g = sns.FacetGrid(data=pdata,
                   col_order=order,sharey=False)
 order = sorted(pdata.target.unique())
 
-
-
 g.map(sns.kdeplot,'length')
-
 g.set_xlabels('Read Length')
 g.set_ylabels('HiFi Reads')
 g.add_legend()

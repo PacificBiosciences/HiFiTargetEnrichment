@@ -22,7 +22,7 @@ rule create_exons_bed:
         f'batches/{batch}/logs/bedtools/exon.bed.log'
     shell:
         '''
-        bedtools intersect -u -a {input.ensmbl} -b {input.targets} > {output} 
+        (bedtools intersect -u -a {input.ensmbl} -b {input.targets} > {output}) > {log} 2>&1
         '''
 
 rule copy_beds:
@@ -32,8 +32,6 @@ rule copy_beds:
         temp( f'batches/{batch}/beds/{{elem}}.bed' ),
     message:
         "Copy beds for pipeline naming consistency"
-    log:
-        f'batches/{batch}/logs/bedtools/{{elem}}.bed.log'
     shell:
         '''
         cp {input} {output}
@@ -82,6 +80,8 @@ rule get_coverage:
         "envs/samtools.yaml"
     message:
         "Getting coverage of {input.bed} from {input.bam}"
+    log:
+        f'batches/{batch}/logs/bedtools/get_coverage.{{bedfile}}.{{sample}}.bed.log'
     shell:
         '''
         bedtools intersect -a <(samtools view -hbF {params.filter} {input.bam}) -b {input.bed} > {output.ontarget}
@@ -101,6 +101,8 @@ rule get_coverage_fraction:
     params:
         sample='{sample}',
         lowcov=config["QC"]["lowcov"],
+    log:
+        f'batches/{batch}/logs/awk/coverage_fraction.{{bedfile}}.{{sample}}.bed.log'
     shell:
         '''
         awk -F, -v s={params.sample} -v low={params.lowcov} \
@@ -126,6 +128,8 @@ rule summarize_coverage_fraction:
         expand( f'batches/{batch}/' + '{sample}/coverage/{{bedfile}}_base_coverage_fraction.csv', sample=sample2barcode.keys() )
     output:
         f'batches/{batch}/stats/{{bedfile}}_covered_fraction.csv',
+    log:
+        f'batches/{batch}/logs/awk/summarize_coverage_fraction.{{bedfile}}.bed.log'
     shell:
         '''
         tail -qn1 {input} \
@@ -422,12 +426,13 @@ rule plot_multi_read:
     params:
         script=f'{config["scripts"]}/plot_multi_reads.py',
         odir=f'batches/{batch}/stats',
-        buffer=5000,
+        buffer=f'{config["picard"]["near_distance"]}',
+        targetsPerPanel=25,
     conda:
         'envs/python.yaml',
     shell:
         '''
-        python {params.script} {input.csv} {input.bed} {params.buffer} {params.odir}
+        python {params.script} {input.csv} {input.bed} {params.buffer} {params.targetsPerPanel} {params.odir}
         '''
 
 rule plot_read_categories:

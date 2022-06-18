@@ -21,7 +21,7 @@
 │   ├── reference.fasta
 │   └── reference.fasta.fai
 ├── batches
-│   └── <batch_id>  # bpatch_id
+│   └── <batch_name>  # bpatch_id
 │       ├── benchmarks/  # cpu time per task
 │       ├── demux/  # demultiplexed hifi reads
 │       ├── glnexus/  # intermediate cohort vcf files
