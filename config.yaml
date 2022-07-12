@@ -12,7 +12,7 @@ ref :
   shortname   : 'GRCh38_noalt'
   fasta       : 'reference/human_GRCh38_no_alt_analysis_set.fasta'
   index       : 'reference/human_GRCh38_no_alt_analysis_set.fasta.fai'
-  chr_lengths : 'reference/human_GRCh38_no_alt_analysis_set.chr_lengths.txt'  # cut -f1,2 reference.fasta.fa > reference.chr_lengths.txt
+  chr_lengths : 'reference/human_GRCh38_no_alt_analysis_set.chr_lengths.txt'  # cut -f1,2 reference.fasta.fai > reference.chr_lengths.txt
   tr_bed      : 'workflow/aux/tandem_repeats.bed'
   exons       : 'workflow/aux/all_hg38_exons_ensembl.bed'
 

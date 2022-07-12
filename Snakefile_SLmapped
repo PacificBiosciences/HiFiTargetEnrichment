@@ -1,4 +1,5 @@
 import re
+from pathlib import Path
 
 ## prefix every task command with:
 # set -o pipefail  # trace ERR through pipes
@@ -9,29 +10,26 @@ shell.prefix(
     f"set -o pipefail; umask 002; export TMPDIR={config['tmpdir']}; export SINGULARITY_TMPDIR={config['tmpdir']}; "
 )
 
-batch = config["batch"]
-movie = config["ccsReads"]
-# Get expected barcodes and sample map from standard barcode_biosample_csv used in SL
-# map both directions
-# Assumes csv has header (actual names ignored).  
-# two columns barcode,sampleId
-barcode2sample = dict( row.split(',') 
-                       for i,row in enumerate( open( config["biosamples"] ).read().strip().split('\n') )
-                       if i > 0 )
-sample2barcode = { v:k for k,v in barcode2sample.items() }
-ref = config["ref"]["shortname"]
+batch   = config[ "batch" ]
+ref     = config[ "ref" ][ "shortname" ]
+readDir = config[ "readDir" ]
+
+# build "sample2reads" map from input dir
+# for target building.
+# sample name is file name (remove .bam only)
+sample2reads = { 
+                 bamfile.stem : str( bamfile )
+                for bamfile in Path( readDir ).glob('*.bam') 
+               }
+# point the sample2barcode variable at the map
+sample2barcode = sample2reads
+
 print(f"Processing batch {batch} with reference {ref}.")
 
-targets = [
-            f'batches/{batch}/demux/demultiplex.{barcode}.bam'
-            for barcode in sample2barcode.values()
-           ]
+targets = []
 
-
+include: "rules/slinputs.smk"
 include: "rules/common.smk"
-include: "rules/demux.smk"
-include: "rules/preprocess.smk"
-include: "rules/pbmm2.smk"
 include: "rules/deepvariant.smk"
 include: "rules/whatshap.smk"
 include: "rules/glnexus.smk"
@@ -49,7 +47,7 @@ targets.extend(
             "visual_report.html",
             "vcf.stats.txt",
         ]
-        for sample in sample2barcode.keys()
+        for sample in sample2reads.keys()
     ]
 )
 # WH
@@ -65,7 +63,7 @@ targets.extend(
             "haplotagged.bam",
             "haplotagged.bam.bai",
         ]
-        for sample in sample2barcode.keys()
+        for sample in sample2reads.keys()
     ]
 )
 
@@ -82,10 +80,7 @@ targets.extend(
 # QC extras
 if config['QC']['runQC']:
     include: "rules/qc_cov.smk"
-    include: "rules/qc_ext.smk"
 
-ruleorder: demux_ubam > demux_fastq
-ruleorder: pbmm2_align_ubam > pbmm2_align_fastq
 ruleorder: deepvariant_postprocess_variants > tabix_vcf
 
 rule all:

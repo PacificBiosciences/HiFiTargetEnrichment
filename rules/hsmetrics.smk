@@ -61,7 +61,8 @@ rule consolidate_hsmetrics:
         f"batches/{batch}/stats/hs_metrics_consolidated.tsv",
     shell:
         '''
-        awk '/METRICS/ {{getline; print;
+        awk 'BEGIN     {{ FS=OFS="\\t" }} \
+             /METRICS/ {{getline; print;
                          getline; split(FILENAME,s,"/"); $67=s[3]; print}}' {input} \
         | awk 'NR==1 || !/^BAIT_SET/' > {output}
         '''
@@ -93,7 +94,7 @@ rule hsmetrics_quickview:
         quickgetter = itemgetter(*quickviewColumns)
         with open( input[0], newline='' ) as hsmetrics,\
              open( output[0], 'w', newline='' ) as quickview:
-            reader = csv.DictReader( map( lambda s: s.replace('\t',' '), hsmetrics), dialect='unix', delimiter=' ')
+            reader = csv.DictReader( hsmetrics, dialect='unix', delimiter='\t')
             writer = csv.DictWriter( quickview, quickviewColumns, dialect='unix', delimiter='\t', quoting=0 )
             writer.writeheader()
             for row in reader:
