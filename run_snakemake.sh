@@ -14,7 +14,7 @@ TARGETS=$4
 PROBES=${5:-None}
 
 if [ -z $3 ] || [ "$1" == "-h" ] || [ "$1" == "--help" ]; then
- echo -e "\nUsage: $(basename $0) <batch_name> <biosample_csv> <hifi_reads> <target_bed> [<probe_bed>]\n"
+ echo -e "\nUsage: sbatch $(basename $0) <batch_name> <biosample_csv> <hifi_reads> <target_bed> [<probe_bed>]\n"
  exit 0
 fi
 

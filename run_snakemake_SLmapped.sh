@@ -13,7 +13,7 @@ TARGETS=$3
 PROBES=${4:-None}
 
 if [ -z $3 ] || [ "$1" == "-h" ] || [ "$1" == "--help" ]; then
- echo -e "\nUsage: $(basename $0) <batch_name> <hifi_read_dir> <target_bed> [<probe_bed>]\n"
+ echo -e "\nUsage: sbatch $(basename $0) <batch_name> <hifi_read_dir> <target_bed> [<probe_bed>]\n"
  exit 0
 fi
 
