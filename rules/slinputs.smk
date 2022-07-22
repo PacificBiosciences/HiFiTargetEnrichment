@@ -1,4 +1,4 @@
-rule link_aligned_bams:
+rule copy_aligned_bams:
     input:
         lambda wcs: sample2reads[ wcs.sample ]
     output:
@@ -8,6 +8,6 @@ rule link_aligned_bams:
         "envs/samtools.yaml"
     shell:
         '''
-        ln -s $( readlink -f {input} ) {output.bam}
+        cp $( readlink -f {input} ) {output.bam}
         samtools index {output.bam}
         '''

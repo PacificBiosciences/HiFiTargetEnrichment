@@ -1,7 +1,7 @@
 localrules: 
     merge_read_metrics,
     consolidate_read_data,
-    count_issue_element,
+    count_issue_elements,
     get_coverage_fraction,
     create_exons_bed,
     copy_beds,

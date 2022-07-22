@@ -69,7 +69,7 @@ rule whatshap_haplotag:
     benchmark:
         f"batches/{batch}/benchmarks/whatshap/{{sample}}.haplotag.tsv"
     params:
-        "--tag-supplementary",
+        "--tag-supplementary --ignore-read-groups",
     conda:
         "envs/whatshap.yaml"
     message:

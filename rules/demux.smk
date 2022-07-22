@@ -10,9 +10,8 @@ rule demux_ubam:
         f"batches/{batch}/logs/lima/demux.log",
     params:
         odir=f'batches/{batch}/demux/',
-        #preset='hifi-symmetric',
-        #filters='--ccs --min-score 40 --min-end-score 40 --min-ref-span 0.75 --same',
-        filters='--min-score 40 --min-end-score 40 --min-ref-span 0.75 --same --ignore-missing-adapters',
+        filters='--hifi-preset ASYMMETRIC --min-score 80 --min-qv 20',
+        #filters='--min-score 40 --min-end-score 40 --min-ref-span 0.75 --same --ignore-missing-adapters',
         loglevel='INFO',
     threads:
         24
@@ -45,8 +44,8 @@ rule demux_fastq:
         f"batches/{batch}/logs/lima/demux.log",
     params:
         odir=f'batches/{batch}/demux/',
-        #preset='hifi-symmetric',
-        filters='--min-score 40 --min-end-score 40 --min-ref-span 0.75 --same --ignore-missing-adapters',
+        filters='--hifi-preset ASYMMETRIC --min-score 80 --min-qv 20',
+        #filters='--min-score 40 --min-end-score 40 --min-ref-span 0.75 --same --ignore-missing-adapters',
         loglevel='INFO',
     threads:
         24

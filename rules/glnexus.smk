@@ -98,7 +98,7 @@ rule split_glnexus_vcf:
         "Executing {rule}: Extracting {wildcards.region} variants from {input}."
     shell: 
         '''
-        (tabix {params.extra} {input.vcf} {params.region} > {params.vcf} && bgzip {params.vcf}) 2> {log}
+        (tabix {params.extra} {input.vcf} {params.region} > {params.vcf} && bgzip {params.vcf}) > {log} 2>&1
         '''
 
 

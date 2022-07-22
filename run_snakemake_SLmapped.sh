@@ -8,12 +8,13 @@
 umask 002
 
 BATCH=$1
-READDIR=$2
+READS=$2
 TARGETS=$3
 PROBES=${4:-None}
 
 if [ -z $3 ] || [ "$1" == "-h" ] || [ "$1" == "--help" ]; then
- echo -e "\nUsage: sbatch $(basename $0) <batch_name> <hifi_read_dir> <target_bed> [<probe_bed>]\n"
+ echo -e "\nUsage: sbatch $(basename $0) <batch_name> <hifi_reads> <target_bed> [<probe_bed>]\n"
+ echo -e "\n<hifi_reads> can be a directory of bams or a textfile with one bam path per line (fofn)\n"
  exit 0
 fi
 
@@ -31,7 +32,7 @@ snakemake --reason \
     --printshellcmds \
     --configfile workflow/config.yaml \
     --config batch="${BATCH}" \
-             readDir="${READDIR}" \
+             inputReads="${READS}" \
              targets="${TARGETS}" \
              probes="${PROBES}" \
              scripts=workflow/scripts \

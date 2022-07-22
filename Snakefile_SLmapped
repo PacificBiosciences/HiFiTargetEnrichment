@@ -1,4 +1,4 @@
-import re
+import sys, re, pysam
 from pathlib import Path
 
 ## prefix every task command with:
@@ -10,16 +10,27 @@ shell.prefix(
     f"set -o pipefail; umask 002; export TMPDIR={config['tmpdir']}; export SINGULARITY_TMPDIR={config['tmpdir']}; "
 )
 
-batch   = config[ "batch" ]
-ref     = config[ "ref" ][ "shortname" ]
-readDir = config[ "readDir" ]
+batch  = config[ "batch" ]
+ref    = config[ "ref" ][ "shortname" ]
+reads  = Path( config[ "inputReads" ] )
 
-# build "sample2reads" map from input dir
-# for target building.
-# sample name is file name (remove .bam only)
+# function to pull sample name from aligned bam
+def getSampleName( bamfile ):
+    header = pysam.AlignmentFile( bamfile ).header
+    return header.get( 'RG' )[ 0 ][ 'SM' ].strip()
+
+# build "sample2reads" map from input 
+if reads.is_dir(): # input is a directory with bam files in it
+    bamGen = map( str, reads.glob( '*.bam' ) )
+elif reads.is_file(): # assume this is a file of filenames, one per line
+    bamGen = open( reads,  'r' ).read().split()
+else:
+    print( f'ERROR: {reads} is not a directory or a fofn?' )
+    sys.exit( 1 )   
+
 sample2reads = { 
-                 bamfile.stem : str( bamfile )
-                for bamfile in Path( readDir ).glob('*.bam') 
+                getSampleName( bamfile ) : bamfile
+                for bamfile in bamGen 
                }
 # point the sample2barcode variable at the map
 sample2barcode = sample2reads

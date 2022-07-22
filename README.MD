@@ -50,10 +50,10 @@
 ```bash
 # create the base conda environment
 $ conda create \
-    --channel bioconda \
     --channel conda-forge \
+    --channel bioconda \
     --prefix ./conda_env \
-    python=3 snakemake=6.15.5 mamba lockfile
+    python=3 snakemake=6.15.5 mamba pysam lockfile
 
 # activate the base conda environment
 $ conda activate ./conda_env
@@ -66,6 +66,10 @@ $ mkdir reference cluster_logs
 
 # drop your reference.fasta and reference.fasta.fai into reference and adjust the path in workflow/config.yaml
 
-# run the workflow for batch <batch_name>
+# run the full workflow including demux/markdup/mapping from a single HiFi movie for batch <batch_name>
 $ sbatch workflow/run_snakemake.sh <batch_name> <biosample_csv> <hifi_reads> <target_bed> <probe_bed>
+
+# run just variant calling and phasing for a set of bams following demux/markdup/mapping on SL
+# <hifi_reads> can be a directory of bams or a textfile with one bam path per line (fofn)
+$batch run_snakemake_SLmapped.sh <batch_name> <hifi_reads> <target_bed> [<probe_bed>]
 ```
