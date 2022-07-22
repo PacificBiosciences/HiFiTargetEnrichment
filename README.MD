@@ -71,5 +71,5 @@ $ sbatch workflow/run_snakemake.sh <batch_name> <biosample_csv> <hifi_reads> <ta
 
 # run just variant calling and phasing for a set of bams following demux/markdup/mapping on SL
 # <hifi_reads> can be a directory of bams or a textfile with one bam path per line (fofn)
-$ sbatch run_snakemake_SLmapped.sh <batch_name> <hifi_reads> <target_bed> [<probe_bed>]
+$ sbatch workflow/run_snakemake_SLmapped.sh <batch_name> <hifi_reads> <target_bed> [<probe_bed>]
 ```
