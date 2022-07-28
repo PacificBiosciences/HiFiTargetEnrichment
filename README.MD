@@ -59,7 +59,7 @@ $ conda create \
 $ conda activate ./conda_env
 
 # clone the github repo
-$ git clone https://github.com/jrharting/hifi-probe-capture-workflow.git workflow
+$ git clone https://github.com/PacificBiosciences/HiFiTargetEnrichment.git workflow
 
 # create a couple directories
 $ mkdir reference cluster_logs

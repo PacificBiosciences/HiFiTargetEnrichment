@@ -36,7 +36,7 @@ rule pbmm2_align_fastq:
     input:
         reference=config["ref"]["fasta"],
         ref_index=config["ref"]["index"],
-        query=lambda wildcards: f'batches/{batch}/{{sample}}/markdups.fastq',
+        query=f'batches/{batch}/{{sample}}/markdup/markdups.fastq',
     output:
         bam=temp(f"batches/{batch}/{{sample}}/aligned/{{sample}}.{ref}.bam"),
         bai=temp(f"batches/{batch}/{{sample}}/aligned/{{sample}}.{ref}.bam.bai"),
