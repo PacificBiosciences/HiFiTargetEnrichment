@@ -43,6 +43,7 @@ include: "rules/slinputs.smk"
 include: "rules/common.smk"
 include: "rules/deepvariant.smk"
 include: "rules/whatshap.smk"
+include: "rules/pbsv.smk"
 include: "rules/glnexus.smk"
 include: "rules/hsmetrics.smk"
 
@@ -75,6 +76,14 @@ targets.extend(
             "haplotagged.bam.bai",
         ]
         for sample in sample2reads.keys()
+    ]
+)
+
+# pbsv
+targets.extend(
+    [
+        f"batches/{batch}/{sample}/pbsv/{sample}.{ref}.pbsv.vcf"
+        for sample in sample2barcode.keys()
     ]
 )
 

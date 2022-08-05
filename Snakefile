@@ -34,6 +34,7 @@ include: "rules/preprocess.smk"
 include: "rules/pbmm2.smk"
 include: "rules/deepvariant.smk"
 include: "rules/whatshap.smk"
+include: "rules/pbsv.smk"
 include: "rules/glnexus.smk"
 include: "rules/hsmetrics.smk"
 
@@ -65,6 +66,14 @@ targets.extend(
             "haplotagged.bam",
             "haplotagged.bam.bai",
         ]
+        for sample in sample2barcode.keys()
+    ]
+)
+
+# pbsv
+targets.extend(
+    [
+        f"batches/{batch}/{sample}/pbsv/{sample}.{ref}.pbsv.vcf"
         for sample in sample2barcode.keys()
     ]
 )
