@@ -7,8 +7,9 @@
 4) call small variants with [DeepVariant v1.4.0](https://github.com/google/deepvariant)
 5) phase small variants with [WhatsHap](https://github.com/whatshap/whatshap)
 6) haplotag aligned BAMs with WhatsHap
-7) jointly call all variants with glnexus
-8) [optionally] Run some QC reports including hsMetrics
+7) call SV with pbsv
+8) jointly call all variants with glnexus
+9) Run some QC reports including hsMetrics
 
 
 ## Directory structure within basedir
@@ -36,6 +37,7 @@
 │           ├── counts/ # read counts by target beds
 │           ├── coverage/ # read coverage by target beds
 │           ├── deepvariant/  # intermediate DV vcf, incl g.vcf per sample
+│           ├── pbsv/  # structural variant calls
 │           ├── hs_metrics/ # picard hsmetrics for this sample
 │           ├── markdup/ # unaligned reads with PCR dups marked
 │           ├── read_metrics/  # per-read information
