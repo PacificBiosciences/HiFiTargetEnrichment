@@ -19,7 +19,7 @@ def partition(lst, size):
 
 targets = pd.read_csv(targetBed,
                       sep='\t',
-                      names=['chr','start','stop','target'])\
+                      names=['chr','start','stop','target', 'sense'])\
             .set_index('target')
 #Set length of target region
 targets['tlength'] = targets.eval('stop - start + 2 * @targetBuffer')
