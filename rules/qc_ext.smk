@@ -19,8 +19,8 @@ rule plot_read_categories:
 
 # extand targets
 targets.extend(
-    [
-        f'batches/{batch}/stats/{fname}'
-        for fname in ['read_categories.png','read_length_by_sample.csv']
-    ]
+        [
+            f'batches/{batch}/stats/{fname}'
+            for fname in ['read_categories.png','read_length_by_sample.csv']
+        ]
 )

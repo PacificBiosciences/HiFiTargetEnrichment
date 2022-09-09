@@ -125,7 +125,9 @@ rule get_coverage_fraction:
 
 rule summarize_coverage_fraction:
     input:
-        expand( f'batches/{batch}/' + '{sample}/coverage/{{bedfile}}_base_coverage_fraction.csv', sample=sample2barcode.keys() )
+        lambda wildcards: 
+                [ f'batches/{batch}/{sample}/coverage/{{bedfile}}_base_coverage_fraction.csv' 
+                  for sample in _get_demuxed_samples( wildcards ) ]
     output:
         f'batches/{batch}/stats/{{bedfile}}_covered_fraction.csv',
     log:
@@ -216,7 +218,9 @@ rule get_duplicate_lengths:
 
 rule merge_duplengths:
     input:
-        expand( f'batches/{batch}/' + '{sample}/read_metrics/duplicate_lengths.csv', sample=sample2barcode.keys() ),
+        lambda wildcards:
+            [ f'batches/{batch}/{sample}/read_metrics/duplicate_lengths.csv'
+              for sample in _get_demuxed_samples( wildcards ) ]
     output:
         temp(f'batches/{batch}/stats/all_duplicate_lengths.csv'),
     shell:
@@ -293,9 +297,9 @@ rule merge_read_metrics:
 
 rule consolidate_read_data:
     input: 
-        expand(
-                f'batches/{batch}/' + '{sample}/read_metrics/read_data.csv',sample=sample2barcode.keys()
-              ),
+        lambda wildcards:
+            [ f'batches/{batch}/{sample}/read_metrics/read_data.csv'
+              for sample in _get_demuxed_samples( wildcards ) ]
     output:
         f'batches/{batch}/stats/all_read_data.csv',
     shell:
@@ -305,9 +309,9 @@ rule consolidate_read_data:
 
 rule consolidate_coverage:
     input:
-        expand(
-                f'batches/{batch}/' + '{sample}/coverage/{{bedfile}}_base_coverage.csv',sample=sample2barcode.keys()
-              ),
+        lambda wildcards:
+            [ f'batches/{batch}/{sample}/coverage/{{bedfile}}_base_coverage.csv'
+              for sample in _get_demuxed_samples( wildcards ) ]
     output:
         f'batches/{batch}/stats/all_{{bedfile}}_coverage.csv',
     shell:
@@ -317,16 +321,16 @@ rule consolidate_coverage:
 
 rule count_issue_elements:
     input:
-        expand(
-                f'batches/{batch}/' + '{sample}/counts/readcount_{{elem}}.bed', sample=sample2barcode.keys()
-              ),
+        lambda wildcards:
+            [ f'batches/{batch}/{sample}/counts/readcount_{{elem}}.bed'
+              for sample in _get_demuxed_samples( wildcards ) ]
     output:
         f'batches/{batch}/stats/{{status}}/{{elem}}.csv',
     params:
         low= lambda wildcards: 0 if wildcards.status == 'dropped' else config['QC']['lowcov']
     shell:
         '''
-        awk -v min={params.low} '$5 <= min' {input} \
+        awk -v min={params.low} '$NF <= min {{ print $1, $2, $3, $4 ~ /^[0-9]+$/ ? "" : $4 }}' {input} \
         | sort -k1,1 -k2,2n \
         | uniq -c \
         | awk 'BEGIN {{ OFS=","; print "chr,start,stop,target,samplesDropped" }} \
@@ -437,85 +441,92 @@ rule plot_multi_read:
 
 
 
-targets.extend(
-    [
-        f'batches/{batch}/{sample}/counts/readcount_{bedfile}.bed'
-        for sample in sample2barcode.keys()
-        for bedfile in allBeds
-    ]
+targets.append(
+    lambda wildcards: 
+        [
+            f'batches/{batch}/{sample}/counts/readcount_{bedfile}.bed'
+            for sample in _get_demuxed_samples( wildcards )
+            for bedfile in allBeds
+        ]
+)
+
+targets.append(
+    lambda wildcards:
+        [
+            f'batches/{batch}/{sample}/counts/{bedfile}_per_read.csv'
+            for sample in _get_demuxed_samples( wildcards )
+            for bedfile in allBeds
+        ]
+)
+
+targets.append(
+    lambda wildcards:
+        [
+            f'batches/{batch}/{sample}/read_metrics/reads.csv'
+            for sample in _get_demuxed_samples( wildcards )
+        ]
+)
+
+targets.append(
+    lambda wildcards:
+        [
+            f'batches/{batch}/{sample}/read_metrics/read_data.csv'
+            for sample in _get_demuxed_samples( wildcards )
+        ]
 )
 
 targets.extend(
-    [
-        f'batches/{batch}/{sample}/counts/{bedfile}_per_read.csv'
-        for sample in sample2barcode.keys()
-        for bedfile in allBeds
-    ]
+        [
+            f'batches/{batch}/stats/{bedfile}_frac_gc.csv'
+            for bedfile in allBeds
+        ]
 )
 
 targets.extend(
-    [
-        f'batches/{batch}/{sample}/read_metrics/reads.csv'
-        for sample in sample2barcode.keys()
-    ]
+        [
+            f'batches/{batch}/stats/all_{bedfile}_coverage.csv'
+            for bedfile in ['targets','exons']
+        ]
+)
+
+targets.append(
+    lambda wildcards:
+        [
+            f'batches/{batch}/{sample}/read_metrics/mean_base_coverage_by_target.png'
+            for sample in _get_demuxed_samples( wildcards )
+        ]
+)
+
+targets.append(
+    lambda wildcards:
+        [
+            f'batches/{batch}/{sample}/coverage/coverage_by_target.png'
+            for sample in _get_demuxed_samples( wildcards )
+        ]
 )
 
 targets.extend(
-    [
-        f'batches/{batch}/{sample}/read_metrics/read_data.csv'
-        for sample in sample2barcode.keys()
-    ]
+        [
+            f'batches/{batch}/stats/{status}/{elem}.csv'
+            for status in ['dropped','lowcov']
+            for elem in allBeds
+        ]
+)
+
+targets.append(
+    lambda wildcards:
+        [
+            f'batches/{batch}/{sample}/coverage/{bedfile}_base_coverage_fraction.csv'
+            for sample in _get_demuxed_samples( wildcards )
+            for bedfile in ['targets','exons']
+        ]
 )
 
 targets.extend(
-    [
-        f'batches/{batch}/stats/{bedfile}_frac_gc.csv'
-        for bedfile in allBeds
-    ]
-)
-
-targets.extend(
-    [
-        f'batches/{batch}/stats/all_{bedfile}_coverage.csv'
-        for bedfile in ['targets','exons']
-    ]
-)
-
-targets.extend(
-    [
-        f'batches/{batch}/{sample}/read_metrics/mean_base_coverage_by_target.png'
-        for sample in sample2barcode.keys()
-    ]
-)
-
-targets.extend(
-    [
-        f'batches/{batch}/{sample}/coverage/coverage_by_target.png'
-        for sample in sample2barcode.keys()
-    ]
-)
-
-targets.extend(
-    [
-        f'batches/{batch}/stats/{status}/{elem}.csv'
-        for status in ['dropped','lowcov']
-        for elem in allBeds
-    ]
-)
-
-targets.extend(
-    [
-        f'batches/{batch}/{sample}/coverage/{bedfile}_base_coverage_fraction.csv'
-        for sample in sample2barcode.keys()
-        for bedfile in ['targets','exons']
-    ]
-)
-
-targets.extend(
-    [
-        f'batches/{batch}/stats/{bedfile}_covered_fraction.csv'
-        for bedfile in ['targets','exons']
-    ]
+        [
+            f'batches/{batch}/stats/{bedfile}_covered_fraction.csv'
+            for bedfile in ['targets','exons']
+        ]
 )
 
 targets.extend(
@@ -527,9 +538,10 @@ targets.extend(
         ]
 )
 
-targets.extend(
-    [
-        f'batches/{batch}/{sample}/read_metrics/duplicate_lengths.csv'
-        for sample in sample2barcode.keys()
-    ]
+targets.append(
+    lambda wildcards:
+        [
+            f'batches/{batch}/{sample}/read_metrics/duplicate_lengths.csv'
+            for sample in _get_demuxed_samples( wildcards )
+        ]
 )

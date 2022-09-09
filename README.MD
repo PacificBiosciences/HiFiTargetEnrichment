@@ -8,7 +8,7 @@
 5) phase small variants with [WhatsHap](https://github.com/whatshap/whatshap)
 6) haplotag aligned BAMs with WhatsHap
 7) call SV with pbsv
-8) jointly call all variants with glnexus
+8) jointly call all variants (excl pbsv) with glnexus
 9) Run some QC reports including hsMetrics
 
 
@@ -22,7 +22,7 @@
 │   ├── reference.fasta
 │   └── reference.fasta.fai
 ├── batches
-│   └── <batch_name>  # bpatch_id
+│   └── <batch_name>  # batch_id
 │       ├── benchmarks/  # cpu time per task
 │       ├── demux/  # demultiplexed hifi reads
 │       ├── glnexus/  # intermediate cohort vcf files
@@ -55,7 +55,7 @@ $ conda create \
     --channel conda-forge \
     --channel bioconda \
     --prefix ./conda_env \
-    python=3 snakemake=6.15.5 mamba pysam lockfile
+    python=3 snakemake=7.14.0 mamba pysam lockfile
 
 # activate the base conda environment
 $ conda activate ./conda_env

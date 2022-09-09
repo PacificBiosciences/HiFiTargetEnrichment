@@ -11,7 +11,7 @@ rule create_dict:
     resources:
         mem_mb=1024,
     wrapper:
-        "v1.3.1/bio/picard/createsequencedictionary"
+        "v1.10.0/bio/picard/createsequencedictionary"
 
 
 rule bed_to_interval_list:
@@ -27,7 +27,7 @@ rule bed_to_interval_list:
     resources:
         mem_mb=1024,
     wrapper:
-        "v1.3.1/bio/picard/bedtointervallist"
+        "v1.10.0/bio/picard/bedtointervallist"
 
 rule picard_collect_hs_metrics:
     input:
@@ -54,9 +54,13 @@ rule picard_collect_hs_metrics:
     wrapper:
         "v1.3.1/bio/picard/collecthsmetrics"
 
+def _agg_hsmetrics( wildcards ):
+    return [ f'batches/{batch}/{sample}/hs_metrics/hs_metrics.txt'
+             for sample in _get_demuxed_samples( wildcards ) ]
+
 rule consolidate_hsmetrics:
     input:
-        expand( f'batches/{batch}/' + '{sample}/hs_metrics/hs_metrics.txt', sample=sample2barcode.keys() ),
+        _agg_hsmetrics,
     output:
         f"batches/{batch}/stats/hs_metrics_consolidated.tsv",
     shell:
@@ -101,21 +105,12 @@ rule hsmetrics_quickview:
                 writer.writerow( dict( zip( quickviewColumns, quickgetter(row) ) ) )
                        
 
-targets.extend(
-    [
-        f"batches/{batch}/{sample}/hs_metrics/hs_metrics.txt"
-        for sample in sample2barcode.keys()
-    ]
+targets.append(
+    lambda wildcards:
+        [
+            f"batches/{batch}/{sample}/hs_metrics/hs_metrics.txt"
+            for sample in _get_demuxed_samples( wildcards )
+        ]
 )
-
-targets.extend(
-    [
-         f"batches/{batch}/stats/hs_metrics_consolidated.tsv"
-    ]
-)
-
-targets.extend(
-    [
-         f"batches/{batch}/stats/hs_metrics_consolidated_quickview.tsv"
-    ]
-)
+targets.append( f"batches/{batch}/stats/hs_metrics_consolidated.tsv" )
+targets.append( f"batches/{batch}/stats/hs_metrics_consolidated_quickview.tsv" )

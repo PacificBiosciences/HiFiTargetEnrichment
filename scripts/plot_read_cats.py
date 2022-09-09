@@ -44,7 +44,7 @@ sns.histplot(data=allData,
 
 #side plot
 data = allData.groupby('category').size().reindex(hue_order[::-1]).rename('reads').reset_index()
-data['yieldFrac'] = data.reads.transform(lambda x:x/x.sum())
+data['yieldFrac'] = data.reads.transform(lambda x:x/x.sum()).fillna(0)
 
 bottom=0
 colors = sns.color_palette()[:5][::-1]

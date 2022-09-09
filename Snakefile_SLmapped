@@ -34,6 +34,10 @@ sample2reads = {
                }
 # point the sample2barcode variable at the map
 sample2barcode = sample2reads
+# function to get expected samples
+def _get_demuxed_samples( wildcards ):
+    return sample2reads.keys()
+
 
 print(f"Processing batch {batch} with reference {ref}.")
 

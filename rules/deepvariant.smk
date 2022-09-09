@@ -7,7 +7,7 @@ rule deepvariant_make_examples:
         bai=f"batches/{batch}/{{sample}}/aligned/{{sample}}.{ref}.bam.bai",
         reference=config["ref"]["fasta"],
     output:
-        tfrecord=(
+        tfrecord=temp(
             f"batches/{batch}/{{sample}}/deepvariant/examples/examples.tfrecord-{{shard}}-of-{config['N_SHARDS']:05}.gz"
         ),
         nonvariant_site_tfrecord=f"batches/{batch}/{{sample}}/deepvariant/examples/gvcf.tfrecord-{{shard}}-of-{config['N_SHARDS']:05}.gz",

@@ -30,10 +30,12 @@ checkpoint make_regions:
 
 rule glnexus:
     input:
-        gvcf=expand(f'batches/{batch}/' + '{sample}/deepvariant/{sample}.' + f'{ref}.deepvariant.g.vcf.gz',
-                    sample=sample2barcode.keys()),
-        tbi=expand(f'batches/{batch}/' + '{sample}/deepvariant/{sample}.' + f'{ref}.deepvariant.g.vcf.gz.tbi',
-                    sample=sample2barcode.keys()),
+        gvcf=lambda wildcards: \
+                [ f'batches/{batch}/{sample}/deepvariant/{sample}.{ref}.deepvariant.g.vcf.gz'
+                  for sample in _get_demuxed_samples( wildcards ) ],
+        tbi=lambda wildcards: \
+                [ f'batches/{batch}/{sample}/deepvariant/{sample}.{ref}.deepvariant.g.vcf.gz.tbi'
+                  for sample in _get_demuxed_samples( wildcards ) ],
         bed=f'batches/{batch}/glnexus/regions.bed',
     output:
         bcf=temp(f"batches/{batch}/glnexus/{batch}.{ref}.deepvariant.glnexus.bcf"),
@@ -82,6 +84,7 @@ rule split_glnexus_vcf:
     input:
         vcf=f"batches/{batch}/glnexus/{batch}.{ref}.deepvariant.glnexus.vcf.gz",
         tbi=f"batches/{batch}/glnexus/{batch}.{ref}.deepvariant.glnexus.vcf.gz.tbi",
+        regions=f'batches/{batch}/glnexus/regions.bed',
     output: 
         temp(f"batches/{batch}/whatshap_cohort/regions/{batch}.{ref}.{{region}}.deepvariant.glnexus.vcf.gz"),
     log: 
@@ -104,13 +107,15 @@ rule split_glnexus_vcf:
 
 rule whatshap_phase_cohort:
     input:
-        reference = config['ref']['fasta'],
-        vcf = f"batches/{batch}/whatshap_cohort/regions/{batch}.{ref}.{{region}}.deepvariant.glnexus.vcf.gz",
-        tbi = f"batches/{batch}/whatshap_cohort/regions/{batch}.{ref}.{{region}}.deepvariant.glnexus.vcf.gz.tbi",
-        phaseinput=expand(f'batches/{batch}/' + '{sample}/aligned/{sample}.' + f'{ref}.bam',
-                          sample=sample2barcode.keys()),
-        phasebai=expand(f'batches/{batch}/' + '{sample}/aligned/{sample}.' + f'{ref}.bam.bai',
-                          sample=sample2barcode.keys())
+        reference=config['ref']['fasta'],
+        vcf=f"batches/{batch}/whatshap_cohort/regions/{batch}.{ref}.{{region}}.deepvariant.glnexus.vcf.gz",
+        tbi=f"batches/{batch}/whatshap_cohort/regions/{batch}.{ref}.{{region}}.deepvariant.glnexus.vcf.gz.tbi",
+        phaseinput=lambda wildcards:
+                        [ f'batches/{batch}/{sample}/aligned/{sample}.{ref}.bam'
+                          for sample in _get_demuxed_samples( wildcards ) ],
+        phasebai=lambda wildcards: 
+                        [ f'batches/{batch}/{sample}/aligned/{sample}.{ref}.bam.bai'
+                          for sample in _get_demuxed_samples( wildcards ) ],
     output: 
         temp(f"batches/{batch}/whatshap_cohort/regions/{batch}.{ref}.{{region}}.deepvariant.glnexus.phased.vcf.gz")
     log: 
