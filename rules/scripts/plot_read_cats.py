@@ -3,10 +3,10 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import sys
 
-allDemuxReads = pd.read_csv( sys.argv[1] )
-limaReport    = pd.read_csv( sys.argv[2], sep='\t', usecols=['ReadLengths','PassedFilters'] )
-dups          = pd.read_csv( sys.argv[3], usecols=['sample','length','category'] )
-outdir        = sys.argv[4]
+allDemuxReads = pd.read_csv( snakemake.input.readCsv )
+limaReport    = pd.read_csv( snakemake.input.lima, sep='\t', usecols=['ReadLengths','PassedFilters'] )
+dups          = pd.read_csv( snakemake.input.dups, usecols=['sample','length','category'] )
+outdir        = snakemake.params.odir
 
 #load data
 onTarget  = allDemuxReads.query('target != "."')\

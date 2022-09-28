@@ -42,7 +42,7 @@ snakemake --reason \
     --max-jobs-per-second 1 \
     --use-conda --conda-frontend mamba \
     --use-singularity --singularity-args '--nv ' \
-    --latency-wait 120 \
+    --latency-wait 300 \
     --cluster-config workflow/cluster.yaml \
     --cluster "sbatch --partition={cluster.partition} \
                       --cpus-per-task={cluster.cpus} \

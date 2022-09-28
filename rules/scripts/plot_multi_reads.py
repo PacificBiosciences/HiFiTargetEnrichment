@@ -2,15 +2,14 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
-import sys
 
 DPI=400
 
-readCsv       = sys.argv[1]
-targetBed     = sys.argv[2]
-targetBuffer  = int(sys.argv[3])
-targetPerPlot = int(sys.argv[4])
-outDir        = sys.argv[5]
+readCsv       = snakemake.input.csv
+targetBed     = snakemake.input.bed
+targetBuffer  = int(snakemake.params.buffer)
+targetPerPlot = int(snakemake.params.targetsPerPanel)
+outDir        = snakemake.params.odir
 
 # function for partitioning target sets into readable subplots
 def partition(lst, size):

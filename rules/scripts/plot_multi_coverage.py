@@ -2,15 +2,11 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
-import sys
 from math import ceil
 
 DPI=400
 
-covCsv = sys.argv[1]
-outDir = sys.argv[2]
-
-data = pd.read_csv(covCsv)
+data = pd.read_csv( snakemake.input[0] )
 #replace "." with "off-target"
 ot = 'off-target'
 data.target = data.target.str.replace('.',ot,regex=False)
@@ -30,4 +26,4 @@ g.map(plt.plot, 'start','coverage')\
  .set_xlabels('chr start pos')\
  .set_ylabels('Coverage')\
  .add_legend()\
- .savefig(f'{outDir}/multi_coverage_by_target.png',dpi=DPI)
+ .savefig(f'{snakemake.params.odir}/multi_coverage_by_target.png',dpi=DPI)

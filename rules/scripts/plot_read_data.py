@@ -1,15 +1,15 @@
+import sys
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
-import sys
 
 DPI=200
 
-readCsv      = sys.argv[1]
-targetBed    = sys.argv[2]
-targetBuffer = int(sys.argv[3])
-outDir       = sys.argv[4]
+readCsv      = snakemake.input.csv
+targetBed    = snakemake.input.bed
+targetBuffer = int(snakemake.params.buffer)
+outDir       = snakemake.params.odir
 
 
 targets = pd.read_csv(targetBed,

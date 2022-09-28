@@ -6,7 +6,7 @@ localrules:
     create_exons_bed,
     copy_beds,
 
-allBeds = ['targets','probes','exons']
+allBeds = ['targets','exons']
 
 rule create_exons_bed:
     input:
@@ -229,71 +229,19 @@ rule merge_duplengths:
               {{ print }}' {input} > {output}
         '''
 
-rule endmost_probe:
-    input:
-        bed=config['probes'],
-        bam=f"batches/{batch}/{{sample}}/aligned/{{sample}}.{ref}.bam",
-    output:
-        temp(f'batches/{batch}/{{sample}}/read_metrics/endmost_probe.csv')
-    params:
-        filter=3328
-    conda:
-        "envs/samtools.yaml"
-    message:
-        "Finding endmost probe for {input.bam}"
-    shell:
-        '''
-        bedtools intersect -a <(samtools view -hbF {params.filter} {input.bam}) -b {input.bed} -bed \
-        | awk 'function abs(v) {{return v < 0 ? -v : v}} \
-               BEGIN {{ OFS=","; print "readname,probe2end,probeStart,probeStop" }} \
-              {{ m=1e9; \
-                 for (r=2;r<4;r++) {{ \
-                                     for (p=7;p<9;p++) {{ \
-                                                         if ( abs($r-$p)<m ) {{ m=abs($r-$p) }} \
-                                                       }} \
-                                   }}; \
-                print $4, m, $7, $8 \
-              }}' \
-        | ( sed -u 1q; sort -t, -k1,1 -k2,2n | sort -t, -u -k1,1 ) \
-        > {output}
-        '''
-
 rule merge_read_metrics:
     input:
-        stats=f'batches/{batch}/{{sample}}/read_metrics/reads.csv',
-        target=f'batches/{batch}/{{sample}}/read_metrics/read_target.csv',
-        probes=f'batches/{batch}/{{sample}}/counts/probes_per_read.csv', 
-        endprb=f'batches/{batch}/{{sample}}/read_metrics/endmost_probe.csv',
-        exons=f'batches/{batch}/{{sample}}/counts/exons_per_read.csv',
+        f'batches/{batch}/{{sample}}/read_metrics/reads.csv',
+        f'batches/{batch}/{{sample}}/read_metrics/read_target.csv',
+        f'batches/{batch}/{{sample}}/counts/exons_per_read.csv',
     output:
         temp( f'batches/{batch}/{{sample}}/read_metrics/read_data.csv' ),
     params:
         sample='{sample}'
-    shell:
-        '''
-        join -t, -e. -a1 -o auto \
-             --header \
-            {input.stats} \
-            <( \
-              join -t, \
-                   --header \
-                  <( \
-                    join -t, \
-                         --header \
-                        <( \
-                          join -t, \
-                               --header \
-                               -o 1.1,1.2,1.3,1.4,1.5,2.5 \
-                               {input.probes} \
-                               {input.exons} \
-                         ) \
-                        {input.target} \
-                   ) \
-                  {input.endprb} \
-              ) \
-        | sed -e '1s/^/sample,/' -e '2,$s/^/{params.sample},/' \
-        > {output}
-        '''
+    conda:
+        'envs/python.yaml'
+    script:
+        'scripts/merge_read_metrics.py'
 
 rule consolidate_read_data:
     input: 
@@ -372,15 +320,12 @@ rule plot_read_metrics:
             ]
         ],
     params:
-        script=f'{config["scripts"]}/plot_read_data.py',
         odir=f'batches/{batch}/{{sample}}/read_metrics',
         buffer=5000,
     conda:
         'envs/python.yaml',
-    shell:
-        '''
-        python {params.script} {input.csv} {input.bed} {params.buffer} {params.odir}        
-        '''
+    script:
+        'scripts/plot_read_data.py'
 
 rule plot_coverage:
     input:
@@ -388,14 +333,11 @@ rule plot_coverage:
     output:
         f'batches/{batch}/{{sample}}/coverage/coverage_by_target.png',
     params:
-        script=f'{config["scripts"]}/plot_coverage.py',
         odir=f'batches/{batch}/{{sample}}/coverage',
     conda:
         'envs/python.yaml',
-    shell:
-        '''
-        python {params.script} {input} {params.odir}
-        '''
+    script:
+        'scripts/plot_coverage.py'
 
 rule plot_multi_coverage:
     input:
@@ -403,14 +345,11 @@ rule plot_multi_coverage:
     output:
         f'batches/{batch}/stats/multi_coverage_by_target.png',
     params:
-        script=f'{config["scripts"]}/plot_multi_coverage.py',
         odir=f'batches/{batch}/stats',
     conda:
         'envs/python.yaml',
-    shell:
-        '''
-        python {params.script} {input} {params.odir}
-        '''
+    script:
+        'scripts/plot_multi_coverage.py'
 
 rule plot_multi_read:
     input:
@@ -428,16 +367,13 @@ rule plot_multi_read:
             ]
         ],
     params:
-        script=f'{config["scripts"]}/plot_multi_reads.py',
         odir=f'batches/{batch}/stats',
         buffer=f'{config["picard"]["near_distance"]}',
         targetsPerPanel=25,
     conda:
         'envs/python.yaml',
-    shell:
-        '''
-        python {params.script} {input.csv} {input.bed} {params.buffer} {params.targetsPerPanel} {params.odir}
-        '''
+    script:
+        'scripts/plot_multi_reads.py'
 
 
 
@@ -485,7 +421,7 @@ targets.extend(
 targets.extend(
         [
             f'batches/{batch}/stats/all_{bedfile}_coverage.csv'
-            for bedfile in ['targets','exons']
+            for bedfile in allBeds
         ]
 )
 
@@ -518,14 +454,14 @@ targets.append(
         [
             f'batches/{batch}/{sample}/coverage/{bedfile}_base_coverage_fraction.csv'
             for sample in _get_demuxed_samples( wildcards )
-            for bedfile in ['targets','exons']
+            for bedfile in allBeds
         ]
 )
 
 targets.extend(
         [
             f'batches/{batch}/stats/{bedfile}_covered_fraction.csv'
-            for bedfile in ['targets','exons']
+            for bedfile in allBeds
         ]
 )
 

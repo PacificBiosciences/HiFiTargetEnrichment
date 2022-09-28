@@ -7,16 +7,12 @@ rule plot_read_categories:
         f'batches/{batch}/stats/read_categories.png',
         f'batches/{batch}/stats/read_length_by_sample.csv',
     params:
-        script=f'{config["scripts"]}/plot_read_cats.py',
         odir=f'batches/{batch}/stats/'
     conda:
         'envs/python.yaml',
-    shell:
-        '''
-        python {params.script} {input.readCsv} {input.lima} {input.dups} {params.odir}
-        '''
+    script:
+        'scripts/plot_read_cats.py'
     
-
 # extand targets
 targets.extend(
         [
