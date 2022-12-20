@@ -69,14 +69,16 @@ $ git clone https://github.com/PacificBiosciences/HiFiTargetEnrichment.git workf
 # create a couple directories
 $ mkdir reference annotation cluster_logs
 
-# drop your reference.fasta and reference.fasta.fai into reference and adjust the [ref][fasta|index] paths in workflow/config.yaml
+# drop your reference.fasta and reference.fasta.fai into reference 
+# and adjust the [ref][fasta|index] paths in workflow/config.yaml
 
 # Annotation [optional]
-# drop your annotation file and index into annotation and adjust the [annotate][variants] path in workflow/config.yaml
-# ensure that [annotate][gVCF] is set to True
+# drop your annotation file and index into annotation
+# and adjust the [annotate][variants] path in workflow/config.yaml
+# ensure that [annotate][gVCF] is set to True in workflow/config.yaml
 
 # PharmCAT [optional]
-# Set [pharmcat][run_analysis] to True
+# Set [pharmcat][run_analysis] to True in workflow/config.yaml
 
 # run the full workflow including demux/markdup/mapping from a single HiFi movie for batch <batch_name>
 # Use the <target_bed> as the probes bed if you do not have the probes.  This will allow for generation of HS_Metrics
