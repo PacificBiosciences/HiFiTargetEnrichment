@@ -39,7 +39,7 @@ snakemake --reason \
              scripts=workflow/scripts \
     --nolock \
     --local-cores 4 \
-    --jobs 500 \
+    --jobs 750 \
     --max-jobs-per-second 1 \
     --use-conda --conda-frontend mamba \
     --use-singularity --singularity-args '--nv ' \

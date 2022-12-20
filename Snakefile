@@ -41,6 +41,11 @@ include: "rules/pbsv.smk"
 include: "rules/glnexus.smk"
 if config[ "probes" ] != "None":
     include: "rules/hsmetrics.smk"
+if config[ "pharmcat" ][ "run_analysis" ]:
+    include: "rules/pharmcat.smk"
+    include: "rules/pangu_cyp2d6.smk"
+if config[ "annotate" ][ "gVCF" ]:
+    include: "rules/annotate.smk"
 
 # DV targets
 targets.append(

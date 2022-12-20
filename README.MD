@@ -9,7 +9,9 @@
 6) haplotag aligned BAMs with WhatsHap
 7) call SV with pbsv
 8) jointly call all variants (excl pbsv) with glnexus
-9) Run some QC reports including hsMetrics
+9) [optionally] call PGx star (*) alleles with [PharmCAT](https://pharmcat.org/) and [pangu](https://github.com/PacificBiosciences/pangu)
+10) [optionally] annotate output gVCF with dbsnp or other database containing variant IDs
+11) Run some QC reports including hsMetrics
 
 
 ## Directory structure within basedir
@@ -30,16 +32,17 @@
 │       ├── picard/  # interval lists for hsmetrics
 │       ├── stats/  # batch-wide collated reports, including HS Metrics summary
 │       ├── whatshap_cohort/  # joint-called, phased SNV 
+│       ├── merged_gvcf/  # [optional] annotated gvcf with all batch samples included 
 │       ├── <sample_id 1>/  # per-sample results, one for each sample
 │       :        ...
 │       └── <sample_id n>/  # per-sample results, one for each sample
-│           ├── aligned/  # intermediate
-│           ├── counts/ # read counts by target beds
 │           ├── coverage/ # read coverage by target beds
 │           ├── deepvariant/  # intermediate DV vcf, incl g.vcf per sample
-│           ├── pbsv/  # structural variant calls
 │           ├── hs_metrics/ # picard hsmetrics for this sample
 │           ├── markdup/ # unaligned reads with PCR dups marked
+│           ├── pangu/  # [optional] HiFi CYP2D6 star calling results
+│           ├── pbsv/  # structural variant calls
+│           ├── pharmcat/  # [optional] pharmcat results
 │           ├── read_metrics/  # per-read information
 │           └── whatshap/  # phased small variants; merged haplotagged alignments
 │ 
@@ -55,7 +58,7 @@ $ conda create \
     --channel conda-forge \
     --channel bioconda \
     --prefix ./conda_env \
-    python=3 snakemake=7.14.0 mamba pysam lockfile
+    python=3.9 snakemake mamba pysam lockfile
 
 # activate the base conda environment
 $ conda activate ./conda_env
@@ -64,12 +67,20 @@ $ conda activate ./conda_env
 $ git clone https://github.com/PacificBiosciences/HiFiTargetEnrichment.git workflow
 
 # create a couple directories
-$ mkdir reference cluster_logs
+$ mkdir reference annotation cluster_logs
 
-# drop your reference.fasta and reference.fasta.fai into reference and adjust the path in workflow/config.yaml
+# drop your reference.fasta and reference.fasta.fai into reference and adjust the [ref][fasta|index] paths in workflow/config.yaml
+
+# Annotation [optional]
+# drop your annotation file and index into annotation and adjust the [annotate][variants] path in workflow/config.yaml
+# ensure that [annotate][gVCF] is set to True
+
+# PharmCAT [optional]
+# Set [pharmcat][run_analysis] to True
 
 # run the full workflow including demux/markdup/mapping from a single HiFi movie for batch <batch_name>
-$ sbatch workflow/run_snakemake.sh <batch_name> <biosample_csv> <hifi_reads> <target_bed> <probe_bed>
+# Use the <target_bed> as the probes bed if you do not have the probes.  This will allow for generation of HS_Metrics
+$ sbatch workflow/run_snakemake.sh <batch_name> <biosample_csv> <hifi_reads> <target_bed> [<probe_bed>]
 
 # run just variant calling and phasing for a set of bams following demux/markdup/mapping on SL
 # <hifi_reads> can be a directory of bams or a textfile with one bam path per line (fofn)

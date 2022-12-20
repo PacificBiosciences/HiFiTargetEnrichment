@@ -44,7 +44,7 @@ rule check_demux_fail:
         missing = sample2barcode.keys() - params.samples
         if len( missing ):
             with open( f"batches/{batch}/demux_FAIL.txt", 'w' ) as ofile:
-                for sample in missing:
+                for sample in sorted( missing ):
                     ofile.write( f'{sample2barcode[sample]},{sample}\n' ) 
 
 
