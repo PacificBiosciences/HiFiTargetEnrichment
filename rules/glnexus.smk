@@ -11,9 +11,10 @@ def _get_region(wildcards):
     
 checkpoint make_regions:
     input:
-        config['targets'],
+        targets=config['targets'],
+        chr_len=config['ref']['chr_lengths'],
     output:
-        ( f'batches/{batch}/glnexus/regions.bed' ),
+        temp( f'batches/{batch}/glnexus/regions.bed' ),
     params:
         distance=config['merge'],
     log:
@@ -24,7 +25,8 @@ checkpoint make_regions:
         'Generating process regions for {input}'
     shell:
         '''
-        (bedtools merge -i <(sort -k1,1 -k2,2n {input}) -d {params.distance} -c 4 -o first > {output}) 2> {log}
+        (bedtools merge -i <(bedtools slop -b 10000 -i {input.targets} -g {input.chr_len} | sort -k1,1 -k2,2n) \
+                        -d {params.distance} -c 4 -o first > {output}) 2> {log}
         '''
 
 

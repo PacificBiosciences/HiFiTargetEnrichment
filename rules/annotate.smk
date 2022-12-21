@@ -30,7 +30,7 @@ rule annotate_expanded_gvcf:
     output:
         temp(f"batches/{batch}/{{sample}}/annotate/{{sample}}.{ref}.expanded.annotated.g.vcf.gz"),
     params:
-        region=config["targets"],
+        region=f'batches/{batch}/glnexus/regions.bed',
         variants=config["annotate"]["variants"],
     log:
         f"batches/{batch}/logs/annotate/bcftools_annotate/{{sample}}.{ref}.log",
@@ -54,7 +54,7 @@ rule enforce_annotate_all_rows:
     output:
         temp(f"batches/{batch}/{{sample}}/annotate/{{sample}}.{ref}.dv.annotated.merged.g.vcf.gz"),
     params:
-        region=config["targets"],
+        region=f'batches/{batch}/glnexus/regions.bed',
         variants=config["annotate"]["variants"],
     log:
         f"batches/{batch}/logs/annotate/bcftools_merge_indels/{{sample}}.{ref}.log",
@@ -85,7 +85,7 @@ rule merge_annotated_gvcfs:
     output:
         f"batches/{batch}/merged_gvcf/allSamples.{ref}.dv.annotated.merged.g.vcf.gz",
     params:
-        region=config["targets"],
+        region=f'batches/{batch}/glnexus/regions.bed',
     log:
         f"batches/{batch}/logs/annotate/bcftools_merge_all.log",
     conda:
