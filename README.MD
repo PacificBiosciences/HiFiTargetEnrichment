@@ -1,12 +1,12 @@
 # HiFi target enrichment workflow
 
 ## About
-This is a snakemake workflow for analyzing targeted HiFi sequence datasets. The workflow was designed for Twist gene panels sequenced on Sequel IIe or Revio systems. Learn more in this [App Note](https://www.pacb.com/wp-content/uploads/Application-Brief-HiFi-Target-Enrichment-Best-Practices.pdf). Please note that this workflow is still in development. There may be updates to the input / output files and workflow steps which may affect the behavior of the program.
+This is a snakemake workflow for analyzing targeted HiFi sequence datasets. The workflow was designed for Twist gene panels sequenced on PacBio Sequel IIe or Revio systems. Learn more in this [App Note](https://www.pacb.com/wp-content/uploads/Application-Brief-HiFi-Target-Enrichment-Best-Practices.pdf). Please note that this workflow is still in development. There may be updates to the input / output files and workflow steps which may affect the behavior of the program.
 
 ## Getting started
 
 ### Dependencies
-This workflow uses `conda` to install dependencies and set up the compute environment. The workflow is demonstrated with `conda v22+` on a `SLURM` cluster and we recommend 16 cores and 48GB of memory on a single machine. Otherwise, use at your own risk.
+This workflow uses `conda` to install dependencies and set up the compute environment. The workflow is tested with `conda v22+` on a `SLURM` cluster and we recommend 16 cores, 4 GB RAM per core, on a single machine (64GB total memory). Otherwise, use at your own risk.
 
 ### Installation
 
@@ -131,11 +131,11 @@ pangu v0.2.1
 4) call small variants with [DeepVariant v1.4.0](https://github.com/google/deepvariant)
 5) phase small variants with [WhatsHap](https://github.com/whatshap/whatshap)
 6) haplotag aligned BAMs with WhatsHap
-7) call SV with pbsv
+7) call SV with [pbsv](https://github.com/PacificBiosciences/pbsv)
 8) jointly call all variants (excl pbsv) with glnexus
 9) [optionally] call PGx star (*) alleles with [PharmCAT](https://pharmcat.org/) and [pangu](https://github.com/PacificBiosciences/pangu)
 10) [optionally] annotate output gVCF with dbsnp or other database containing variant IDs
-11) Run some QC reports including hsMetrics
+11) Run some QC reports including [hsMetrics](https://snakemake-wrappers.readthedocs.io/en/stable/wrappers/picard/collecthsmetrics.html)
 
 
 #### 8) What is the full directory structure?
