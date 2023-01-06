@@ -1,7 +1,7 @@
 # HiFi target enrichment workflow
 
 ## About
-This is a snakemake workflow for analyzing targeted HiFi sequence datasets. The workflow was designed for Twist gene panels sequenced on PacBio Sequel IIe or Revio systems. Learn more in this [App Note](https://www.pacb.com/wp-content/uploads/Application-Brief-HiFi-Target-Enrichment-Best-Practices.pdf). Please note that this workflow is still in development. There may be updates to the input / output files and workflow steps which may affect the behavior of the program.
+This is a snakemake workflow for analyzing targeted HiFi sequence datasets. The workflow was designed for [Twist](https://www.twistbioscience.com/resources/protocol/long-read-library-preparation-and-standard-hyb-v2-enrichment) gene panels sequenced on PacBio Sequel IIe or Revio systems. Learn more in this [App Note](https://www.pacb.com/wp-content/uploads/Application-Brief-HiFi-Target-Enrichment-Best-Practices.pdf). Please note that this workflow is still in development. There may be updates to the input / output files and workflow steps which may affect the behavior of the program.
 
 ## Getting started
 
