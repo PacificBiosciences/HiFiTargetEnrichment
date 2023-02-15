@@ -1,5 +1,4 @@
 channels:
-  - conda-forge
   - bioconda
 dependencies:
-  - bcftools==1.16
+  - k8==0.2.5

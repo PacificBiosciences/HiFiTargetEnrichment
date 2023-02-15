@@ -1,0 +1,8 @@
+channels:
+  - conda-forge
+  - bioconda
+  - defaults
+dependencies:
+  - paraphase 
+  - minimap2
+  - samtools>=1.13

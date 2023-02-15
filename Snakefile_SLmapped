@@ -56,6 +56,9 @@ if config[ "pharmcat" ][ "run_analysis" ]:
     include: "rules/pangu_cyp2d6.smk"
 if config[ "annotate" ][ "gVCF" ]:
     include: "rules/annotate.smk"
+if config[ "assembly" ]:
+    include: "rules/hifiasm.smk"
+    include: "rules/combine_vcf.smk"
 
 # DV
 targets.extend(

@@ -38,3 +38,7 @@ merge_haplotagged_bams:
   cpus: 8
 samtools_index_merged_bam:
   cpus: 4
+hifiasm_assemble:
+  cpus: 24
+align_hifiasm:
+  cpus: 16
