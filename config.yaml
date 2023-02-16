@@ -2,7 +2,7 @@
 tmpdir : '/tmp'
 
 #demux
-barcodes : 'workflow/barcodes/TruSeq_384.fasta'
+barcodes : 'workflow/barcodes/TruSeq_400.fasta'
 
 # deepvariant
 DEEPVARIANT_VERSION : '1.4.0'
@@ -22,7 +22,7 @@ merge : 1000000
 
 # extra
 QC :
-  runQC  : True
+  runQC  : False
   lowcov : 10
 
 picard :
@@ -30,7 +30,7 @@ picard :
   sample_size   : 1000
 
 pharmcat:
-  run_analysis: True
+  run_analysis: False
   positions: 'workflow/aux/pharmcat_positions.vcf.bgz'
 
 annotate:
