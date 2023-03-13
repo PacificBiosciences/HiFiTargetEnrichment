@@ -17,6 +17,7 @@ ref :
   exons       : 'workflow/aux/all_hg38_exons_ensembl.bed'
 
 # glnexus
+run_cohort: False
 GLNEXUS_VERSION : 'v1.4.1'
 merge : 1000000
 

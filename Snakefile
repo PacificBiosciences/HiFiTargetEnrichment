@@ -38,7 +38,8 @@ include: "rules/pbmm2.smk"
 include: "rules/deepvariant.smk"
 include: "rules/whatshap.smk"
 include: "rules/pbsv.smk"
-include: "rules/glnexus.smk"
+if config["run_cohort"]:
+    include: "rules/glnexus.smk"
 if config[ "probes" ] != "None":
     include: "rules/hsmetrics.smk"
 if config[ "pharmcat" ][ "run_analysis" ]:
@@ -89,16 +90,6 @@ targets.append(
          f"batches/{batch}/{sample}/pbsv/{sample}.{ref}.pbsv.vcf"
          for sample in _get_demuxed_samples( wildcards )
         ]
-)
-
-# GLNexus tagets
-targets.extend(
-    [
-      f"batches/{batch}/whatshap_cohort/{batch}.{ref}.deepvariant.glnexus.phased.vcf.gz",
-      f"batches/{batch}/whatshap_cohort/{batch}.{ref}.deepvariant.glnexus.phased.gtf",
-      f"batches/{batch}/whatshap_cohort/{batch}.{ref}.deepvariant.glnexus.phased.tsv",
-      f"batches/{batch}/whatshap_cohort/{batch}.{ref}.deepvariant.glnexus.phased.blocklist"
-    ]
 )
 
 # QC extras
