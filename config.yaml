@@ -1,24 +1,29 @@
 # temporary storage
-tmpdir : '/tmp'
+tmpdir : '/scratch'
 
 #demux
 barcodes : 'workflow/barcodes/TruSeq_400.fasta'
 
 # deepvariant
-DEEPVARIANT_VERSION : '1.4.0'
-N_SHARDS            : 96
+DEEPVARIANT_VERSION : '1.5.0'
+N_SHARDS            : 192
 
 ref :
-  shortname   : 'GRCh38_noalt'
-  fasta       : 'reference/human_GRCh38_no_alt_analysis_set.fasta'
-  index       : 'reference/human_GRCh38_no_alt_analysis_set.fasta.fai'
-  chr_lengths : 'reference/human_GRCh38_no_alt_analysis_set.chr_lengths.txt'  # cut -f1,2 reference.fasta.fai > reference.chr_lengths.txt
+  shortname   : 'GRCh38_masked'
+  fasta       : 'reference/GRCh38_masked_v2_decoy_gene.fasta'
+  index       : 'reference/GRCh38_masked_v2_decoy_gene.fasta.fai'
+  chr_lengths : 'reference/GRCh38_masked_v2_decoy_gene.chr_lengths.txt'  # cut -f1,2 reference.fasta.fai > reference.chr_lengths.txt
   tr_bed      : 'workflow/aux/tandem_repeats.bed'
   exons       : 'workflow/aux/all_hg38_exons_ensembl.bed'
 
 # glnexus
+run_cohort: False
 GLNEXUS_VERSION : 'v1.4.1'
 merge : 1000000
+
+#sniffles2
+min_sv_len: 50
+sv_threads: 4
 
 # extra
 QC :

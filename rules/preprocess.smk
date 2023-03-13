@@ -37,31 +37,3 @@ rule pbindex_bam:
         '''
         pbindex {input}
         '''
-
-#rule markdup_fastq:
-#    input:
-#        lambda wildcards: f'batches/{batch}/demux/demultiplex.{sample2barcode[wildcards.sample]}.fastq',
-#    output:
-#        markdup=temp( f'batches/{batch}/{{sample}}/markdup/markdups.fastq' ),
-#        idx=temp( f'batches/{batch}/{{sample}}/markdup/markdups.fastq.fai' ),
-#    log:
-#        f"batches/{batch}/logs/pbmarkdup/{{sample}}.log",
-#    params:
-#        options='--cross-library',
-#        loglevel='INFO',
-#    threads:
-#        16
-#    benchmark:
-#        f"batches/{batch}/benchmarks/pbmarkdup/{{sample}}.fastq.tsv"
-#    conda:
-#        'envs/pbmarkdup.yaml'
-#    message:
-#        "Marking duplicates in {input} using pbmarkdup with option {params.options}."
-#    shell:
-#        '''
-#        (pbmarkdup --log-level {params.loglevel} \
-#                   -j {threads} \
-#                   {params.options} \
-#                   {input} {output.markdup}
-#        samtools fqidx {output.dedup}) > {log} 2>&1
-#        '''

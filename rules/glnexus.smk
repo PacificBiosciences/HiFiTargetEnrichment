@@ -197,3 +197,12 @@ rule whatshap_stats_cohort:
             --chr-lengths {input.chr_lengths} \
             {input.vcf}) > {log} 2>&1
         """
+
+targets.extend(
+        [
+         f"batches/{batch}/whatshap_cohort/{batch}.{ref}.deepvariant.glnexus.phased.vcf.gz",
+         f"batches/{batch}/whatshap_cohort/{batch}.{ref}.deepvariant.glnexus.phased.gtf",
+         f"batches/{batch}/whatshap_cohort/{batch}.{ref}.deepvariant.glnexus.phased.tsv",
+         f"batches/{batch}/whatshap_cohort/{batch}.{ref}.deepvariant.glnexus.phased.blocklist"
+        ]
+)
