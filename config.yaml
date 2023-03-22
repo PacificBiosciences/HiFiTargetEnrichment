@@ -31,8 +31,9 @@ picard :
   sample_size   : 1000
 
 pharmcat:
-  run_analysis: False
+  run_analysis: True
   positions: 'workflow/aux/pharmcat_positions.vcf.bgz'
+  mincov: 10
 
 annotate:
     variants: 'annotation/00-All.fixed_chr_PGx_only.vcf.gz'
