@@ -4,14 +4,15 @@ rule pharmcat_preprocess_fill_missing:
         vcf_index=f"batches/{batch}/{{sample}}/whatshap/{{sample}}.{ref}.deepvariant.phased.vcf.gz.tbi",
         reference=config["ref"]["fasta"],
     output:
-        temp(f"batches/{batch}/{{sample}}/pharmcat/{{sample}}.preprocessed.vcf"),
+        temp(f"batches/{batch}/{{sample}}/pharmcat/{{sample}}.preprocessed.vcf.bgz"),
     log:
         f"batches/{batch}/logs/pharmcat/preprocess_vcf/{{sample}}.{ref}.log"
     container:
-        "docker://pgkb/pharmcat"
+        "docker://pgkb/pharmcat:2.3.0"
     params:
         odir=f"batches/{batch}/{{sample}}/pharmcat/",
         regions=config["pharmcat"]["positions"],
+        basefile="{sample}",
     message:
         "pharmcat: preprocess vcf for {wildcards.sample}"
     shell:
@@ -21,14 +22,16 @@ rule pharmcat_preprocess_fill_missing:
             -vcf {input.vcf} \
             -refFna {input.reference} \
             -refVcf {params.regions} \
+            -bf {params.basefile} \
             -o {params.odir} ) > {log} 2>&1
         '''
 
 rule pharmcat_remove_positions_with_no_coverage:
     input:
-        vcf=f"batches/{batch}/{{sample}}/pharmcat/{{sample}}.preprocessed.vcf",
+        vcf=f"batches/{batch}/{{sample}}/pharmcat/{{sample}}.preprocessed.vcf.bgz",
         bam=f"batches/{batch}/{{sample}}/aligned/{{sample}}.{ref}.bam",
         bamindex=f"batches/{batch}/{{sample}}/aligned/{{sample}}.{ref}.bam.bai",
+        genome=config["ref"]["chr_lengths"],
     output:
         vcf=f"batches/{batch}/{{sample}}/pharmcat/{{sample}}.preprocessed.filtered.vcf",
     log:
@@ -42,6 +45,8 @@ rule pharmcat_remove_positions_with_no_coverage:
     shell:
         '''
         (bedtools coverage \
+                  -sorted \
+                  -g {input.genome} \
                   -f 1 \
                   -header \
                   -mean \
@@ -62,7 +67,7 @@ rule run_pharmcat:
     log:
         f"batches/{batch}/logs/pharmcat/run_pharmcat/{{sample}}.log"   
     container:
-        "docker://pgkb/pharmcat"
+        "docker://pgkb/pharmcat:2.3.0"
     message:
         "pharmcat: running pharmcat for {wildcards.sample}"
     shell:
