@@ -60,7 +60,7 @@ rule annotate_vcf_by_method:
     params:
         fields='CHROM,FROM,TO,INFO/GENE,INFO/V',
         header=r''' '##INFO=<ID=GENE,Number=1,Type=String,Description="Gene Name">\n##INFO=<ID=V,Number=1,Type=Integer,Description="V=1 Assembly V=2 Deepvariant">' ''',
-        vs=lambda wcs: {"dv":"1","asm":"2"}[wcs.source],
+        vs=lambda wcs: {"asm":"1","dv":"2"}[wcs.source],
     log:
         f"batches/{batch}/logs/combine_vcf/bcftools/{{sample}}.annotate_{{source}}.log",
     conda:
