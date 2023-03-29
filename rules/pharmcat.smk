@@ -1,55 +1,10 @@
-rule expand_gvcf:
+rule pharmcat_preprocess_fill_missing:
     input:
-        gvcf=f"batches/{batch}/{{sample}}/deepvariant/{{sample}}.{ref}.deepvariant.g.vcf.gz",
-        gvcf_index=f"batches/{batch}/{{sample}}/deepvariant/{{sample}}.{ref}.deepvariant.g.vcf.gz.tbi",
+        vcf=f"batches/{batch}/{{sample}}/whatshap/{{sample}}.{ref}.deepvariant.phased.vcf.gz",
+        vcf_index=f"batches/{batch}/{{sample}}/whatshap/{{sample}}.{ref}.deepvariant.phased.vcf.gz.tbi",
         reference=config["ref"]["fasta"],
     output:
-        temp(f"batches/{batch}/{{sample}}/pharmcat/{{sample}}.{ref}.deepvariant.g.expanded.vcf.gz"),
-    params:
-        regions=config["pharmcat"]["positions"],
-    log:
-        f"batches/{batch}/logs/pharmcat/bcftools_convert/{{sample}}.{ref}.log",
-    conda:
-        "envs/bcftools.yaml"
-    message:
-        "pharmcat: expanding gvcf for {wildcards.sample}"
-    shell:
-        '''
-        (bcftools convert --gvcf2vcf \
-         -f {input.reference} \
-         -R {params.regions} \
-         -Oz \
-         -o {output} \
-         {input.gvcf}) > {log} 2>&1
-        '''
-
-rule enforce_indels:
-    input: 
-        vcf=f"batches/{batch}/{{sample}}/pharmcat/{{sample}}.{ref}.deepvariant.g.expanded.vcf.gz",
-        vcf_index=f"batches/{batch}/{{sample}}/pharmcat/{{sample}}.{ref}.deepvariant.g.expanded.vcf.gz.tbi",
-    output:
-        temp(f"batches/{batch}/{{sample}}/pharmcat/{{sample}}.{ref}.deepvariant.g.merged.vcf.gz"),
-    params:
-        regions=config["pharmcat"]["positions"],
-    log:
-        f"batches/{batch}/logs/pharmcat/bcftools_merge_indels/{{sample}}.{ref}.log",
-    conda:
-        "envs/bcftools.yaml"
-    message:
-        "pharmcat: expanding gvcf for {wildcards.sample}"
-    shell:
-        '''
-        (bcftools merge {params.regions} {input.vcf} |\
-         bcftools view -s ^PharmCAT -Oz -o {output}) > {log} 2>&1
-        '''
-
-rule pharmcat_preprocess_vcf:
-    input:
-        vcf=f"batches/{batch}/{{sample}}/pharmcat/{{sample}}.{ref}.deepvariant.g.merged.vcf.gz",
-        vcf_index=f"batches/{batch}/{{sample}}/pharmcat/{{sample}}.{ref}.deepvariant.g.merged.vcf.gz.tbi",
-        reference=config["ref"]["fasta"],
-    output:
-        f"batches/{batch}/{{sample}}/pharmcat/{{sample}}.preprocessed.vcf",
+        temp(f"batches/{batch}/{{sample}}/pharmcat/{{sample}}.preprocessed.vcf.bgz"),
     log:
         f"batches/{batch}/logs/pharmcat/preprocess_vcf/{{sample}}.{ref}.log"
     container:
@@ -57,23 +12,55 @@ rule pharmcat_preprocess_vcf:
     params:
         odir=f"batches/{batch}/{{sample}}/pharmcat/",
         regions=config["pharmcat"]["positions"],
+        basefile="{sample}",
     message:
         "pharmcat: preprocess vcf for {wildcards.sample}"
     shell:
         '''
         (/pharmcat/pharmcat_vcf_preprocessor.py \
+            --missing-to-ref \
             -vcf {input.vcf} \
             -refFna {input.reference} \
             -refVcf {params.regions} \
+            -bf {params.basefile} \
             -o {params.odir} ) > {log} 2>&1
+        '''
+
+rule pharmcat_remove_positions_with_no_coverage:
+    input:
+        vcf=f"batches/{batch}/{{sample}}/pharmcat/{{sample}}.preprocessed.vcf.bgz",
+        bam=f"batches/{batch}/{{sample}}/aligned/{{sample}}.{ref}.bam",
+        bamindex=f"batches/{batch}/{{sample}}/aligned/{{sample}}.{ref}.bam.bai",
+        genome=config["ref"]["chr_lengths"],
+    output:
+        vcf=f"batches/{batch}/{{sample}}/pharmcat/{{sample}}.preprocessed.filtered.vcf",
+    log:
+        f"batches/{batch}/logs/pharmcat/preprocess_vcf/{{sample}}.remove_nocov.log"
+    params:
+        mincov=config["pharmcat"]["mincov"],
+    conda:
+        "envs/samtools.yaml"
+    message:
+        "pharmcat: remove ref-calls with low mean coverage for {wildcards.sample}"
+    shell:
+        '''
+        (bedtools coverage \
+                  -sorted \
+                  -g {input.genome} \
+                  -f 1 \
+                  -header \
+                  -mean \
+                  -a {input.vcf} \
+                  -b {input.bam} \
+         | ( sed  -u '/^#CHROM/q' ; awk '$11 >= {params.mincov}' | cut -f1-10 ) > {output}) > {log} 2>&1
         '''
 
 rule run_pharmcat:
     input:
-        vcf=f"batches/{batch}/{{sample}}/pharmcat/{{sample}}.preprocessed.vcf",
+        vcf=f"batches/{batch}/{{sample}}/pharmcat/{{sample}}.preprocessed.filtered.vcf",
         cyp2d6=f"batches/{batch}/{{sample}}/pangu/{{sample}}_pharmcat_fix.tsv",
     output:
-        [ f"batches/{batch}/{{sample}}/pharmcat/{{sample}}.preprocessed.{ftype}"
+        [ f"batches/{batch}/{{sample}}/pharmcat/{{sample}}.preprocessed.filtered.{ftype}"
             for ftype in [ 'match.json', 'phenotype.json', 'report.json', 'report.html' ] ],
     params:
         odir=f"batches/{batch}/{{sample}}/pharmcat/",
@@ -95,9 +82,7 @@ rule run_pharmcat:
 targets.append(
     lambda wildcards: \
         [
-            f"batches/{batch}/{sample}/pharmcat/{sample}.preprocessed.report.json"
+            f"batches/{batch}/{sample}/pharmcat/{sample}.preprocessed.filtered.report.json"
             for sample in _get_demuxed_samples( wildcards )
         ]
 )
-
-# Thanks to Binglan Li for help constructing these rules

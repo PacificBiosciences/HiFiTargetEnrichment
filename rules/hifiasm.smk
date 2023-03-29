@@ -172,14 +172,20 @@ rule htsbox:
     benchmark: 
         f"batches/{batch}/benchmarks/htsbox/{{sample}}.asm.tsv"
     params: 
-        '-q20'
+        sample='{sample}',
+        qual='-q20',
     conda: 
         "envs/htsbox.yaml"
     message: 
         "Calling variants from {input.bam} using htsbox."
     shell: 
         '''
-        (htsbox pileup {params} -c -f {input.reference} {input.bam} > {output})> {log} 2>&1
+        (htsbox pileup \
+                {params.qual} \
+                -c \
+                -f {input.reference} \
+                {input.bam} | \
+         bcftools reheader -s <(echo "{params.sample}") > {output})> {log} 2>&1
         '''
 
 rule htsbox_bcftools_stats:
@@ -192,7 +198,7 @@ rule htsbox_bcftools_stats:
     benchmark: 
         f"batches/{batch}/benchmarks/bcftools/stats/{{sample}}.asm.{ref}.htsbox.vcf.tsv"
     params: 
-        f"--fasta-ref {config['ref']['fasta']} -s batches/{batch}/{{sample}}/hifiasm/{{sample}}.asm.{ref}.bam"
+        f"--fasta-ref {config['ref']['fasta']} -s {{sample}}"
     threads: 4
     conda: 
         "envs/bcftools.yaml"

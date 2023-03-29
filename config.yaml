@@ -1,5 +1,6 @@
 # temporary storage
-tmpdir : '/scratch'
+#tmpdir : '/scratch'
+tmpdir : '/tmp'
 
 #demux
 barcodes : 'workflow/barcodes/TruSeq_400.fasta'
@@ -37,10 +38,13 @@ picard :
 pharmcat:
   run_analysis: True
   positions: 'workflow/aux/pharmcat_positions.vcf.bgz'
+  mincov: 10
 
 annotate:
     variants: 'annotation/00-All.fixed_chr_PGx_only.vcf.gz'
     gVCF: False
 
 assembly: True
-paraphase: True
+paraphase: 
+  run_analysis: True
+  labeled_bed: False # restrict to targets with "paraphase" label in bed. default all supported genes (with coverage)

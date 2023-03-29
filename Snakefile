@@ -53,7 +53,7 @@ if config[ "assembly" ]:
     include: "rules/combine_vcf.smk"
 #if config[ "assembly" ]:
 #    include: "rules/hifiasm_meta.smk"
-if config[ "paraphase" ]:
+if config[ "paraphase" ][ "run_analysis"]:
     include: "rules/paraphase.smk"
 
 # DV targets

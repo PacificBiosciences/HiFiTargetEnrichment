@@ -3,6 +3,6 @@ channels:
   - bioconda
   - defaults
 dependencies:
-  - paraphase 
+  - paraphase>=2.0.0
   - minimap2
   - samtools>=1.13
