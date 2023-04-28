@@ -1,12 +1,15 @@
-def _get_vcf_by_type( index=False ):
+#ruleorder: filter_to_type > bgzip_vcf
+
+def _get_vcf_by_type_and_source( index=False ):
     '''Default is to take VCF data from DV'''
     ext = '.tbi' if index else ''
     def getter( wildcards ):
-        if wildcards.source == "asm":
-            return f"batches/{batch}/{wildcards.sample}/hifiasm/{wildcards.sample}.asm.{ref}.htsbox.vcf.gz{ext}"
-        else:
-            #return DV if the source is not specifically called out
-            return f"batches/{batch}/{wildcards.sample}/whatshap/{wildcards.sample}.{ref}.deepvariant.phased.vcf.gz{ext}"
+        return {
+            ("asm",True): f"batches/{batch}/{wildcards.sample}/hifiasm/{wildcards.sample}.asm.{ref}.htsbox.vcf.gz{ext}",
+            ("asm",False) : f"batches/{batch}/{wildcards.sample}/sniffles/{wildcards.sample}.{ref}.{wildcards.source}.sv.vcf.gz{ext}",
+            ("hifi",True): f"batches/{batch}/{wildcards.sample}/whatshap/{wildcards.sample}.{ref}.deepvariant.phased.vcf.gz{ext}",
+            ("hifi",False): f"batches/{batch}/{wildcards.sample}/sniffles/{wildcards.sample}.{ref}.{wildcards.source}.sv.vcf.gz{ext}"
+        }[ (wildcards.source, "SNV" in wildcards.vartype) ]
     return getter
 
     
@@ -49,24 +52,33 @@ rule compress_buffered_targets:
         (bgzip -i {input}) > {log} 2>&1  
         '''
 
+#def is_valid_sample(sample):
+#    return '/' not in sample 
+    
+#wildcard_constraints:
+   # vartype = ["SNV","SV"],
+  #  source  = ["asm","hifi"],
+ #   tool    = ["deepvariant_hifiasm","sniffles"],
+#    sample  = is_valid_sample,
+
 rule annotate_vcf_by_method:
     input:
-        vcf=_get_vcf_by_type(),
-        idx=_get_vcf_by_type(index=True),
+        vcf=_get_vcf_by_type_and_source(),
+        idx=_get_vcf_by_type_and_source(index=True),
         bed=f"batches/{batch}/targets_buffered.bed.gz",
         bidx=f"batches/{batch}/targets_buffered.bed.gz.gzi",
     output:
-        temp(f"batches/{batch}/{{sample}}/combined_vcf/intermed/{{sample}}.{{source}}.vcf.gz"),
+        temp(f"batches/{batch}/{{sample}}/combined_vcf/intermed/{{sample}}.{{vartype}}.{{source}}.vcf.gz"),
     params:
         fields='CHROM,FROM,TO,INFO/GENE,INFO/V',
         header=r''' '##INFO=<ID=GENE,Number=1,Type=String,Description="Gene Name">\n##INFO=<ID=V,Number=1,Type=Integer,Description="V=1 Assembly V=2 Deepvariant">' ''',
-        vs=lambda wcs: {"asm":"1","dv":"2"}[wcs.source],
+        vs=lambda wcs: {"asm":"1","hifi":"2"}[wcs.source],
     log:
-        f"batches/{batch}/logs/combine_vcf/bcftools/{{sample}}.annotate_{{source}}.log",
+        f"batches/{batch}/logs/combine_vcf/bcftools/{{sample}}.{{vartype}}.annotate_{{source}}.log",
     conda:
         "envs/bcftools.yaml"
     message:
-        "Annotating {wildcards.source} variant targets for {wildcards.sample}"
+        "Annotating {wildcards.vartype} from {wildcards.source} variant targets for {wildcards.sample}"
     shell:
         '''
         (bcftools annotate \
@@ -82,41 +94,43 @@ rule annotate_vcf_by_method:
     
 rule concat_combined_analyses:
     input:
-        vcf=[f"batches/{batch}/{{sample}}/combined_vcf/intermed/{{sample}}.dv.vcf.gz",
-             f"batches/{batch}/{{sample}}/combined_vcf/intermed/{{sample}}.asm.vcf.gz"],
-        idx=[f"batches/{batch}/{{sample}}/combined_vcf/intermed/{{sample}}.dv.vcf.gz.tbi",
-             f"batches/{batch}/{{sample}}/combined_vcf/intermed/{{sample}}.asm.vcf.gz.tbi"],
+        vcf=[f"batches/{batch}/{{sample}}/combined_vcf/intermed/{{sample}}.{{vartype}}.hifi.vcf.gz",
+             f"batches/{batch}/{{sample}}/combined_vcf/intermed/{{sample}}.{{vartype}}.asm.vcf.gz"],
+        idx=[f"batches/{batch}/{{sample}}/combined_vcf/intermed/{{sample}}.{{vartype}}.hifi.vcf.gz.tbi",
+             f"batches/{batch}/{{sample}}/combined_vcf/intermed/{{sample}}.{{vartype}}.asm.vcf.gz.tbi"],
+#        tool=lamba wcs: \
+#            "deepvariant_hifiasm" if wcs.vartype == "SNV" else "sniffles",
     output:
-        f"batches/{batch}/{{sample}}/combined_vcf/{{sample}}.{ref}.deepvariant_hifiasm.vcf.gz",
+        f"batches/{batch}/{{sample}}/combined_vcf/{{sample}}.{ref}.{{vartype}}.{{tool}}.vcf.gz",
     log:
-        f"batches/{batch}/logs/combine_vcf/bcftools/{{sample}}.concat.log",
+        f"batches/{batch}/logs/combine_vcf/bcftools/{{sample}}.{{vartype}}.{{tool}}.concat.log",
     conda:
         "envs/bcftools.yaml"
     message:
-        "Merging variants by different methods for {wildcards.sample}"
+        "Merging {wildcards.vartype} variants by different methods for {wildcards.sample}"
     shell:
         '''
         (bcftools concat -a {input.vcf} -Oz -o {output}) > {log} 2>&1
         '''
 
-rule filter_to_snv:
+rule filter_to_type:
     input:
-        vcf=f"batches/{batch}/{{sample}}/combined_vcf/{{sample}}.{ref}.deepvariant_hifiasm.vcf.gz",
-        idx=f"batches/{batch}/{{sample}}/combined_vcf/{{sample}}.{ref}.deepvariant_hifiasm.vcf.gz.tbi",
+        vcf=f"batches/{batch}/{{sample}}/combined_vcf/{{sample}}.{ref}.{{vartype}}.{{tool}}.vcf.gz",
+        idx=f"batches/{batch}/{{sample}}/combined_vcf/{{sample}}.{ref}.{{vartype}}.{{tool}}.vcf.gz.tbi",
+        exclusion=lambda wcs: \
+            '''-e 'strlen(ALT) >= 50 || strlen(REF) >= 50''' if wcs["vartype"] == "SNV" else ""
     output:
-        f"batches/{batch}/{{sample}}/combined_vcf/{{sample}}.{ref}.deepvariant_hifiasm.filtered.vcf.gz",
-    params:
-        maxlen=50,
+        f"batches/{batch}/{{sample}}/combined_vcf/{{sample}}.{ref}.{{vartype}}.{{tool}}.filtered.vcf.gz",
     log:
-        f"batches/{batch}/logs/combine_vcf/bcftools/{{sample}}.filter.log",
+        f"batches/{batch}/logs/combine_vcf/bcftools/{{sample}}.{{vartype}}.{{tool}}.filter.log",
     conda:
         "envs/bcftools.yaml"
     message:
-        "Filtering to SNV for {wildcards.sample}"
+        "Filtering to {wildcards.vartype} for {wildcards.sample}"
     shell:
         '''
         (bcftools view \
-                  -e 'strlen(ALT) >= {params.maxlen} || strlen(REF) >= {params.maxlen}' \
+                  {input.exclusion} \
                   {input.vcf} \
                   -Oz \
                   -o {output}) > {log} 2>&1
@@ -125,7 +139,8 @@ rule filter_to_snv:
 targets.append(
     lambda wildcards: \
         [
-            f"batches/{batch}/{sample}/combined_vcf/{sample}.{ref}.deepvariant_hifiasm.filtered.vcf.gz.tbi"
+            f"batches/{batch}/{sample}/combined_vcf/{sample}.{ref}.{vartype}.{tool}.filtered.vcf.gz.tbi"
             for sample in _get_demuxed_samples( wildcards )
+            for vartype,tool in zip(["SNV","SV"],["deepvariant_hifiasm","sniffles"])
        ]
 )
