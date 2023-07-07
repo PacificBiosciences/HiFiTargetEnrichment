@@ -1,4 +1,7 @@
-#ruleorder: filter_to_type > bgzip_vcf
+#ruleorder: filter_to_type > tabix_vcf
+#ruleorder: concat_combined_analyses > tabix_vcf 
+#ruleorder: annotate_vcf_by_method > tabix_vcf
+
 
 def _get_vcf_by_type_and_source( index=False ):
     '''Default is to take VCF data from DV'''
@@ -6,7 +9,7 @@ def _get_vcf_by_type_and_source( index=False ):
     def getter( wildcards ):
         return {
             ("asm",True): f"batches/{batch}/{wildcards.sample}/hifiasm/{wildcards.sample}.asm.{ref}.htsbox.vcf.gz{ext}",
-            ("asm",False) : f"batches/{batch}/{wildcards.sample}/sniffles/{wildcards.sample}.{ref}.{wildcards.source}.sv.vcf.gz{ext}",
+            ("asm",False): f"batches/{batch}/{wildcards.sample}/hifiasm/{wildcards.sample}.asm.{ref}.htsbox.vcf.gz{ext}",
             ("hifi",True): f"batches/{batch}/{wildcards.sample}/whatshap/{wildcards.sample}.{ref}.deepvariant.phased.vcf.gz{ext}",
             ("hifi",False): f"batches/{batch}/{wildcards.sample}/sniffles/{wildcards.sample}.{ref}.{wildcards.source}.sv.vcf.gz{ext}"
         }[ (wildcards.source, "SNV" in wildcards.vartype) ]
@@ -39,8 +42,10 @@ rule compress_buffered_targets:
     input:
         f"batches/{batch}/targets_buffered.bed",
     output:
-        bed=temp(f"batches/{batch}/targets_buffered.bed.gz"),
-        idx=temp(f"batches/{batch}/targets_buffered.bed.gz.gzi"),
+        bed=(f"batches/{batch}/targets_buffered.bed.gz"),
+        idx=(f"batches/{batch}/targets_buffered.bed.gz.gzi"),
+#        bed=temp(f"batches/{batch}/targets_buffered.bed.gz"),
+#        idx=temp(f"batches/{batch}/targets_buffered.bed.gz.gzi"),
     log:
         f"batches/{batch}/logs/combine_vcf/htslib/compress_index_bed.log",
     conda:
@@ -56,9 +61,9 @@ rule compress_buffered_targets:
 #    return '/' not in sample 
     
 #wildcard_constraints:
+ #   tool    = ["deepvariant_hifiasm","sniffles"],
    # vartype = ["SNV","SV"],
   #  source  = ["asm","hifi"],
- #   tool    = ["deepvariant_hifiasm","sniffles"],
 #    sample  = is_valid_sample,
 
 rule annotate_vcf_by_method:
@@ -68,10 +73,11 @@ rule annotate_vcf_by_method:
         bed=f"batches/{batch}/targets_buffered.bed.gz",
         bidx=f"batches/{batch}/targets_buffered.bed.gz.gzi",
     output:
-        temp(f"batches/{batch}/{{sample}}/combined_vcf/intermed/{{sample}}.{{vartype}}.{{source}}.vcf.gz"),
+        vcf=(f"batches/{batch}/{{sample}}/combined_vcf/intermed/{{sample}}.{{vartype}}.{{source}}.vcf.gz"),
+        idx=(f"batches/{batch}/{{sample}}/combined_vcf/intermed/{{sample}}.{{vartype}}.{{source}}.vcf.gz.tbi"),
     params:
-        fields='CHROM,FROM,TO,INFO/GENE,INFO/V',
-        header=r''' '##INFO=<ID=GENE,Number=1,Type=String,Description="Gene Name">\n##INFO=<ID=V,Number=1,Type=Integer,Description="V=1 Assembly V=2 Deepvariant">' ''',
+        fields=lambda wcs: 'CHROM,FROM,TO,INFO/GENE,INFO/V,-' if 'SNV' in wcs.vartype else 'CHROM,FROM,TO,INFO/GENE,-,INFO/V',
+        header=r''' '##INFO=<ID=GENE,Number=1,Type=String,Description="Gene Name">\n##INFO=<ID=V,Number=1,Type=Integer,Description="V=1 Assembly V=2 HiFi_Reads">' ''',
         vs=lambda wcs: {"asm":"1","hifi":"2"}[wcs.source],
     log:
         f"batches/{batch}/logs/combine_vcf/bcftools/{{sample}}.{{vartype}}.annotate_{{source}}.log",
@@ -89,7 +95,8 @@ rule annotate_vcf_by_method:
          bcftools view \
                   -i "V=={params.vs}" \
                   -Oz \
-                  -o {output}) > {log} 2>&1
+                  -o {output.vcf} \
+         && bcftools index -t {output.vcf}) > {log} 2>&1
         '''
     
 rule concat_combined_analyses:
@@ -98,10 +105,9 @@ rule concat_combined_analyses:
              f"batches/{batch}/{{sample}}/combined_vcf/intermed/{{sample}}.{{vartype}}.asm.vcf.gz"],
         idx=[f"batches/{batch}/{{sample}}/combined_vcf/intermed/{{sample}}.{{vartype}}.hifi.vcf.gz.tbi",
              f"batches/{batch}/{{sample}}/combined_vcf/intermed/{{sample}}.{{vartype}}.asm.vcf.gz.tbi"],
-#        tool=lamba wcs: \
-#            "deepvariant_hifiasm" if wcs.vartype == "SNV" else "sniffles",
     output:
-        f"batches/{batch}/{{sample}}/combined_vcf/{{sample}}.{ref}.{{vartype}}.{{tool}}.vcf.gz",
+        vcf=temp(f"batches/{batch}/{{sample}}/combined_vcf/intermed/{{sample}}.{ref}.{{vartype}}.{{tool}}.vcf.gz"),
+        idx=temp(f"batches/{batch}/{{sample}}/combined_vcf/intermed/{{sample}}.{ref}.{{vartype}}.{{tool}}.vcf.gz.tbi"),
     log:
         f"batches/{batch}/logs/combine_vcf/bcftools/{{sample}}.{{vartype}}.{{tool}}.concat.log",
     conda:
@@ -110,17 +116,19 @@ rule concat_combined_analyses:
         "Merging {wildcards.vartype} variants by different methods for {wildcards.sample}"
     shell:
         '''
-        (bcftools concat -a {input.vcf} -Oz -o {output}) > {log} 2>&1
+        (bcftools concat -a {input.vcf} -Oz -o {output.vcf} && bcftools index -t {output.vcf}) > {log} 2>&1
         '''
 
 rule filter_to_type:
     input:
-        vcf=f"batches/{batch}/{{sample}}/combined_vcf/{{sample}}.{ref}.{{vartype}}.{{tool}}.vcf.gz",
-        idx=f"batches/{batch}/{{sample}}/combined_vcf/{{sample}}.{ref}.{{vartype}}.{{tool}}.vcf.gz.tbi",
-        exclusion=lambda wcs: \
-            '''-e 'strlen(ALT) >= 50 || strlen(REF) >= 50''' if wcs["vartype"] == "SNV" else ""
+        vcf=f"batches/{batch}/{{sample}}/combined_vcf/intermed/{{sample}}.{ref}.{{vartype}}.{{tool}}.vcf.gz",
+        idx=f"batches/{batch}/{{sample}}/combined_vcf/intermed/{{sample}}.{ref}.{{vartype}}.{{tool}}.vcf.gz.tbi",
     output:
-        f"batches/{batch}/{{sample}}/combined_vcf/{{sample}}.{ref}.{{vartype}}.{{tool}}.filtered.vcf.gz",
+        vcf=f"batches/{batch}/{{sample}}/combined_vcf/{{vartype}}/{{sample}}.{ref}.{{tool}}.filtered.vcf.gz",
+        idx=f"batches/{batch}/{{sample}}/combined_vcf/{{vartype}}/{{sample}}.{ref}.{{tool}}.filtered.vcf.gz.tbi",
+    params:
+        exclusion=lambda wcs: \
+            f'{"-e" if "SNV" in wcs["vartype"] else "-i"} \'strlen(ALT) >= 50 || strlen(REF) >= 50\'',
     log:
         f"batches/{batch}/logs/combine_vcf/bcftools/{{sample}}.{{vartype}}.{{tool}}.filter.log",
     conda:
@@ -130,17 +138,18 @@ rule filter_to_type:
     shell:
         '''
         (bcftools view \
-                  {input.exclusion} \
+                  {params.exclusion} \
                   {input.vcf} \
                   -Oz \
-                  -o {output}) > {log} 2>&1
+                  -o {output.vcf} \
+        && bcftools index -t {output.vcf}) > {log} 2>&1
         '''
     
 targets.append(
     lambda wildcards: \
         [
-            f"batches/{batch}/{sample}/combined_vcf/{sample}.{ref}.{vartype}.{tool}.filtered.vcf.gz.tbi"
+            f"batches/{batch}/{sample}/combined_vcf/{vartype}/{sample}.{ref}.{tool}.filtered.vcf.gz.tbi"
             for sample in _get_demuxed_samples( wildcards )
-            for vartype,tool in zip(["SNV","SV"],["deepvariant_hifiasm","sniffles"])
+            for vartype,tool in zip(["SNV","SV"],["deepvariant_hifiasm","sniffles_hifiasm"])
        ]
 )

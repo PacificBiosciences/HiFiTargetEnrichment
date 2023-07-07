@@ -105,7 +105,7 @@ if config['QC']['runQC']:
     include: "rules/qc_cov.smk"
     include: "rules/qc_ext.smk"
 
-ruleorder: deepvariant_postprocess_variants > tabix_vcf
+#ruleorder: deepvariant_postprocess_variants > tabix_vcf
 
 rule all:
     input:

@@ -1,6 +1,6 @@
 # temporary storage
-#tmpdir : '/scratch'
-tmpdir : '/tmp'
+tmpdir : '/scratch'
+# tmpdir : '/tmp'
 
 #demux
 barcodes : 'workflow/barcodes/TruSeq_400.fasta'
