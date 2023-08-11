@@ -3,3 +3,4 @@ channels:
   - bioconda
 dependencies:
   - htslib==1.15
+  - bcftools
