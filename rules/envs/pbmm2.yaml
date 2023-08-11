@@ -3,4 +3,4 @@ channels:
   - bioconda
   - defaults
 dependencies:
-  - pbmm2=1.7
+  - pbmm2=1.12 #1.7
