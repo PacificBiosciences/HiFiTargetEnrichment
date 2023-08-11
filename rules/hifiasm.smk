@@ -162,30 +162,32 @@ rule samtools_index_bam:
 
 rule htsbox:
     input:
-        bam = f"batches/{batch}/{{sample}}/hifiasm/{{sample}}.asm.{ref}.bam",
-        bai = f"batches/{batch}/{{sample}}/hifiasm/{{sample}}.asm.{ref}.bam.bai",
-        reference = config['ref']['fasta'],
-    output: 
-        f"batches/{batch}/{{sample}}/hifiasm/{{sample}}.asm.{ref}.htsbox.vcf"
-    log: 
+        bam=f"batches/{batch}/{{sample}}/hifiasm/{{sample}}.asm.{ref}.bam",
+        bai=f"batches/{batch}/{{sample}}/hifiasm/{{sample}}.asm.{ref}.bam.bai",
+        reference=config['ref']['fasta'],
+    output:
+        vcf=f"batches/{batch}/{{sample}}/hifiasm/{{sample}}.asm.{ref}.htsbox.vcf",
+        vcf_compres=f"batches/{batch}/{{sample}}/hifiasm/{{sample}}.asm.{ref}.htsbox.vcf.gz",
+        vcf_compres_index=f"batches/{batch}/{{sample}}/hifiasm/{{sample}}.asm.{ref}.htsbox.vcf.gz.tbi"
+    log:
         f"batches/{batch}/logs/htsbox/{{sample}}.asm.log"
-    benchmark: 
+    benchmark:
         f"batches/{batch}/benchmarks/htsbox/{{sample}}.asm.tsv"
-    params: 
+    params:
         sample='{sample}',
         qual='-q20',
-    conda: 
+    conda:
         "envs/htsbox.yaml"
-    message: 
+    message:
         "Calling variants from {input.bam} using htsbox."
-    shell: 
+    shell:
         '''
         (htsbox pileup \
                 {params.qual} \
                 -c \
                 -f {input.reference} \
                 {input.bam} | \
-         bcftools reheader -s <(echo "{params.sample}") > {output})> {log} 2>&1
+         bcftools reheader -s <(echo "{params.sample}") > {output.vcf} && bgzip -c {output.vcf} > {output.vcf_compres} && tabix {output.vcf_compres})> {log} 2>&1
         '''
 
 rule htsbox_bcftools_stats:
