@@ -1,0 +1,9 @@
+channels:
+  - bioconda
+  - conda-forge
+dependencies:
+  - htsbox==r346
+  - htslib
+  - tabix
+  - bcftools=1.12
+

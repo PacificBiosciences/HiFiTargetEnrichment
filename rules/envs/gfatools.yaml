@@ -1,6 +1,7 @@
 channels:
-  - conda-forge
+  - ohmeta
   - bioconda
+  - conda-forge
   - defaults
 dependencies:
-  - lima=2.7 #2.5.0
+  - gfatools==0.4

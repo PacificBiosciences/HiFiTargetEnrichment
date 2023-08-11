@@ -1,0 +1,41 @@
+# temporary storage
+tmpdir : '/tmp'
+
+#demux
+barcodes : 'workflow/barcodes/TruSeq_384.fasta'
+
+# deepvariant
+DEEPVARIANT_VERSION : '1.4.0'
+N_SHARDS            : 96
+
+ref :
+  shortname   : 'hs37d5'
+  fasta       : 'reference/human_hs37d5.fasta'
+  index       : 'reference/human_hs37d5.fasta.fai'
+  chr_lengths : 'reference/human_hs37d5.chr_lengths.txt'  # cut -f1,2 reference.fasta.fai > reference.chr_lengths.txt
+  tr_bed      : 'workflow/aux/tandem_repeats.bed'
+  exons       : 'workflow/aux/all_hg38_exons_ensembl.bed' # need to use correct exons!
+
+# glnexus
+GLNEXUS_VERSION : 'v1.4.1'
+merge : 1000000
+
+# extra
+QC :
+  runQC  : True
+  lowcov : 10
+
+picard :
+  near_distance : 5000
+  sample_size   : 1000
+
+pharmcat:
+  run_analysis: False
+  positions: 'workflow/aux/pharmcat_positions.vcf.bgz'
+
+annotate:
+  variants: 'annotation/00-All.fixed_chr_PGx_only.vcf.gz'
+  gVCF: False
+
+paraphase: False
+assembly: False

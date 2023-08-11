@@ -38,6 +38,7 @@ include: "rules/pbmm2.smk"
 include: "rules/deepvariant.smk"
 include: "rules/whatshap.smk"
 include: "rules/pbsv.smk"
+include: "rules/sniffles2.smk"
 if config["run_cohort"]:
     include: "rules/glnexus.smk"
 if config[ "probes" ] != "None":
@@ -47,6 +48,13 @@ if config[ "pharmcat" ][ "run_analysis" ]:
     include: "rules/pangu_cyp2d6.smk"
 if config[ "annotate" ][ "gVCF" ]:
     include: "rules/annotate.smk"
+if config[ "assembly" ]:
+    include: "rules/hifiasm.smk"
+    include: "rules/combine_vcf.smk"
+#if config[ "assembly" ]:
+#    include: "rules/hifiasm_meta.smk"
+if config[ "paraphase" ][ "run_analysis"]:
+    include: "rules/paraphase.smk"
 
 # DV targets
 targets.append(
@@ -97,7 +105,7 @@ if config['QC']['runQC']:
     include: "rules/qc_cov.smk"
     include: "rules/qc_ext.smk"
 
-ruleorder: deepvariant_postprocess_variants > tabix_vcf
+#ruleorder: deepvariant_postprocess_variants > tabix_vcf
 
 rule all:
     input:

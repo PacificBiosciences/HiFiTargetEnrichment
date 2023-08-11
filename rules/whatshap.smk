@@ -6,7 +6,8 @@ rule whatshap_phase:
         phaseinput=f"batches/{batch}/{{sample}}/aligned/{{sample}}.{ref}.bam",
         phaseinputindex=f"batches/{batch}/{{sample}}/aligned/{{sample}}.{ref}.bam.bai",
     output:
-        f"batches/{batch}/{{sample}}/whatshap/{{sample}}.{ref}.deepvariant.phased.vcf.gz",
+        vcf=f"batches/{batch}/{{sample}}/whatshap/{{sample}}.{ref}.deepvariant.phased.vcf.gz",
+        vcf_index=f"batches/{batch}/{{sample}}/whatshap/{{sample}}.{ref}.deepvariant.phased.vcf.gz.tbi",
     log:
         f"batches/{batch}/logs/whatshap/phase/{{sample}}.{ref}.log",
     benchmark:
@@ -20,10 +21,10 @@ rule whatshap_phase:
     shell:
         """
         (whatshap phase {params.extra} \
-            --output {output} \
+            ---output {output.vcf} \
             --reference {input.reference} \
             {input.vcf} \
-            {input.phaseinput}) > {log} 2>&1
+            {input.phaseinput} && tabix {output.vcf}) > {log} 2>&1
         """
 
 
