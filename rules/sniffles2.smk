@@ -13,7 +13,8 @@ rule sniffles_discover:
         bam=_get_bam_by_type(),
         bai=_get_bam_by_type(index=True),
     output:
-        f"batches/{batch}/{{sample}}/sniffles/{{sample}}.{ref}.{{source}}.sv.vcf.gz",
+        vcf=f"batches/{batch}/{{sample}}/sniffles/{{sample}}.{ref}.{{source}}.sv.vcf.gz",
+        vcf_index=f"batches/{batch}/{{sample}}/sniffles/{{sample}}.{ref}.{{source}}.sv.vcf.gz.tbi",
     log:
         f"batches/{batch}/logs/sniffles/{{sample}}.{{source}}.{ref}.log"
     benchmark:
@@ -26,13 +27,12 @@ rule sniffles_discover:
     message:
         "Executing {rule}: Discovering structural variant signatures in {wildcards.sample} from {input.bam}."
     shell:
-        """
-            sniffles \
+        """(sniffles \
                 --minsvlen {params.min_sv_len} \
                 --sample-id {wildcards.sample} \
                 -t {params.sv_threads} \
                 --input {input.bam} \
-                --vcf {output} > {log} 2>&1
+                --vcf {output}) > {log} 2>&1
         """
 
 targets.append(
