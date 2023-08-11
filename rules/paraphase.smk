@@ -13,7 +13,8 @@ rule call_paraphase:
         bai=f"batches/{batch}/{{sample}}/paraphase/{{sample}}_realigned_tagged.bam.bai",
     params:
         odir=f"batches/{batch}/{{sample}}/paraphase/",
-        genes = _get_gene_list() if config["paraphase"]["labeled_bed"] else '',
+        genes=_get_gene_list() if config["paraphase"]["labeled_bed"] else '',
+        reference=config["ref"]["fasta"],
     log:
         f"batches/{batch}/logs/paraphase/{{sample}}.log",
     benchmark:
@@ -24,7 +25,7 @@ rule call_paraphase:
     message:
         "Calling paraphase SMN1/2 for {wildcards.sample}"
     shell:
-        "(paraphase {params.genes} -b {input.bam} -o {params.odir}) > {log} 2>&1"
+        "(paraphase {params.genes} -b {input.bam} -r {params.reference} -o {params.odir}) > {log} 2>&1"
 
 targets.append(
     lambda wildcards: 
