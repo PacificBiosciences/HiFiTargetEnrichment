@@ -8,7 +8,7 @@ rule pharmcat_preprocess_fill_missing:
     log:
         f"batches/{batch}/logs/pharmcat/preprocess_vcf/{{sample}}.{ref}.log"
     container:
-        "docker://pgkb/pharmcat:2.3.0"
+        "docker://pgkb/pharmcat:2.8.2"
     params:
         odir=f"batches/{batch}/{{sample}}/pharmcat/",
         regions=config["pharmcat"]["positions"],

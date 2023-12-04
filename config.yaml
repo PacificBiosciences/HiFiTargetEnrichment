@@ -1,11 +1,12 @@
 # temporary storage
 tmpdir : '/tmp'
+# tmpdir : '/scratch'
 
 #demux
 barcodes : 'workflow/barcodes/TruSeq_400.fasta'
 
 # deepvariant
-DEEPVARIANT_VERSION : '1.4.0'
+DEEPVARIANT_VERSION : '1.5.0'
 N_SHARDS            : 96
 
 ref :

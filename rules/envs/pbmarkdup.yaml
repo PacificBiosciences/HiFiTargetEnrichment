@@ -3,5 +3,5 @@ channels:
   - bioconda
   - defaults
 dependencies:
-  - pbmarkdup=1.0.2
+  - pbmarkdup=1.0.3
   - samtools==1.12

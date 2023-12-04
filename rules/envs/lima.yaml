@@ -3,4 +3,4 @@ channels:
   - bioconda
   - defaults
 dependencies:
-  - lima=2.5.0
+  - lima=2.7.1
