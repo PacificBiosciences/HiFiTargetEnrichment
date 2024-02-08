@@ -23,7 +23,8 @@ rule pharmcat_preprocess_fill_missing:
             -refFna {input.reference} \
             -refVcf {params.regions} \
             -bf {params.basefile} \
-            -o {params.odir} ) > {log} 2>&1
+            -o {params.odir} \
+            -f ) > {log} 2>&1
         '''
 
 rule pharmcat_remove_positions_with_no_coverage:
