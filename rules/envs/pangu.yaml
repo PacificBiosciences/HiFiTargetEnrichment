@@ -3,5 +3,5 @@ channels:
   - bioconda
   - defaults
 dependencies:
-  - pangu=0.2.4
+  - pangu=0.2.8
   - python>=3.9
