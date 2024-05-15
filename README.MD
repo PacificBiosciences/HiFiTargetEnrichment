@@ -212,3 +212,16 @@ $ sbatch workflow/run_snakemake.sh <batch_name> <biosample_csv> <hifi_reads> <ta
 # <hifi_reads> can be a directory of bams or a textfile with one bam path per line (fofn)
 $ sbatch workflow/run_snakemake_SLmapped.sh <batch_name> <hifi_reads> <target_bed> [<probe_bed>]
 ```
+
+# Sample data 
+
+User can use sample bam file for sample HG002 from GIAB to test the workflow 
+
+1- download the bam file from the following link in separate directory, e,g., `foo`
+
+`https://bcmedu-my.sharepoint.com/:f:/g/personal/mmahmoud_bcm_edu/EgERyGle7JZOtYjmKQITok4BQH3gfhDza6KZvklaaHVs1w?e=5BANrY`
+
+2- To run the analysis
+
+`sbatch workflow/run_snakemake_SLmapped.sh HG002 $HOME/foo ./workflow/barcodes/TAGDP.bed`
+
